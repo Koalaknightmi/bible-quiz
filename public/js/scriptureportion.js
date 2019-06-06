@@ -1,4 +1,4 @@
-let dreams = [];
+var dreams = [];
 // define variables that reference elements on our page
 const dreamsList = document.getElementById('dreams');
 
@@ -104,6 +104,7 @@ const hi_u_d = document.querySelector('#u-word');
 const hi_mm_c = document.querySelector('#m-m-c');
 const hi_sm_c = document.querySelector('#s-m-c');
 const hi_u_c = document.querySelector('#u-w-c');
+var mylocalkey = "koalastrikermi-bbqo-";
 
 const ch_set = document.querySelector('#ch-select');
 
@@ -119,6 +120,89 @@ const ls = {
     cu: localStorage.getItem('hi_u_c')
   }
 }
+
+console.dir(ls)
+var log = function (t, deco, type) {
+  if (type === "normal" || type === undefined) {
+    if (deco === "") {
+      console.log(t);
+    } else {
+      console.log("%c" + t, deco);
+    }
+  } else if (type === "clear") {
+    console.clear();
+    if (deco === "") {
+      console.log("log cleared");
+    } else {
+      console.log("%c log cleared", deco);
+    }
+  } else if (type === "groupbegin") {
+    if (deco === "") {
+      console.group(t);
+    } else {
+      console.group("%c" + t, deco);
+    }
+  } else if (type === "groupend") {
+    if (deco === "") {
+      console.log(t);
+      console.groupEnd();
+    } else {
+      console.log("%c" + t, deco);
+      console.groupEnd();
+    }
+  } else if (type === "warn") {
+    if (deco === "") {
+      console.warn(t);
+    } else {
+      console.warn("%c" + t, deco);
+    }
+  } else if (type === "error") {
+    if (deco === "") {
+      console.error(t);
+    } else {
+      console.error("%c" + t, deco);
+    }
+  }
+};
+var lss = function (vare, gs,l, t) {
+if (gs === "set") {
+    localStorage.setItem(mylocalkey + vare, t);
+    //if(l){
+    log("localstorage item " + mylocalkey + vare + " is now set to: " + localStorage.getItem(mylocalkey + vare));
+    //}
+  } else if (gs === "get") {
+    //if(l){log("localstorage item " + mylocalkey + vare + " was returned as: " + localStorage.getItem(mylocalkey + vare));}
+    return localStorage.getItem(mylocalkey + vare);
+  } else if (gs === "dv") {
+    //if(l){log(mylocalkey + vare + "  was deleted");}
+    localStorage.removeItem(mylocalkey + vare);
+  }
+};
+console.log(lss('hi_mm_d',"get"))
+
+if(lss('visited',"get")===null){
+  lss('hi_mm_d',"set","true")
+}
+if(lss('visited',"get")===null){
+  lss('hi_sm_d',"set","true")
+}
+if(lss('visited',"get")===null){
+  lss('hi_u_d',"set","true")
+}
+if(lss('visited',"get")===null){
+  lss('c_mm_d',"set","#808000")
+}
+if(lss('visited',"get")===null){
+  lss('c_sm_d',"set","#00bb00")
+}
+if(lss('visited',"get")===null){
+  lss('c_u_d',"set","#ff0000")
+}
+lss('visited',"set","true")
+
+var hi_u = lss('hi_u_d',"get");
+var hi_sm = lss('hi_sm_d',"get");
+var hi_mm = lss('hi_mm_d',"get");
 
 var ch = "h1";
 var c = 1;
@@ -170,34 +254,53 @@ ch_set.addEventListener('change', (event) => {
   }
 });
 
-/*if (!ls.hl.himm) {
-  hi_mm = false;
-}
-if (!ls.hl.hism) {
-  hi_sm = false;
-}
-if (!ls.hl.hiu) {
-  hi_u = false;
-}
-var lscmm = document.querySelectorAll('.memory-verse-m')
-for (var i = 0; i < lscmm.length; i++) {
-  lscmm[i].style.background = ls.c.cmm;
-}
-var lscsm = document.querySelectorAll('.memory-verse-s')
-for (var i = 0; i < lscsm.length; i++) {
-  lscsm[i].style.background = ls.c.csm;
-}
-var lscu = document.querySelectorAll('.uniqueword')
-for (var i = 0; i < lscu.length; i++) {
-  lscu[i].style.color = ls.c.cu;
-}*/
-
 hi_mm_d.addEventListener('input', (event) => {
-  localStorage.setItem('hi_mm_d', hi_mm_d.checked)
-
+  lss('hi_mm_d',"set", hi_mm_d.checked)
+  if (hi_mm_d.checked) {
+    hi_mm = true;
+  } else {
+    hi_mm = false;
+  }
+      console.log(ch_set.value);
+  ch = ch_set.value;
+  if (ch.indexOf("1p") !== -1) {
+    c = 13 + parseFloat(ch.split("p")[1])
+     console.log(c)
+  } else if (ch.indexOf("2p") !== -1) {
+    c = 18 + parseFloat(ch.split("p")[1])
+     console.log(c)
+  } else {
+    c = ch.split("h")[1]
+     console.log(c)
+  }
+  dreamsList.innerHTML = "";
+  console.log(c)
+  let dream = dreams[c].split(/[0-9]+/);
+  
+  for (var j = 0; j < dream.length; j++) {
+    if (c <= 13) {
+      append("Hebrews " + c + ":" + (j + 1) + " " + dream[j], "H" + c + ":" + (j + 1));
+    } else if (c <= 18 && c > 13) {
+      append("1Peter " + (c-13) + ":" + (j + 1) + " " + dream[j], "1P" + (c-13) + ":" + (j + 1));
+    } else {
+      append("2Peter " + (c-18) + ":" + (j + 1) + " " + dream[j], "2P" + (c-18) + ":" + (j + 1));
+    }
+  }
+    let un1 = document.querySelectorAll('.memory-verse-m')
+  for (var i = 0; i < un1.length; i++) {
+    un1[i].style.background = hi_mm_c.value;
+  }
+  let un2 = document.querySelectorAll('.memory-verse-s')
+  for (var i = 0; i < un2.length; i++) {
+    un2[i].style.background = hi_sm_c.value;
+  }
+  let un3 = document.querySelectorAll('.uniqueword');
+  for (var i = 0; i < un3.length; i++) {
+    un3[i].style.color = hi_u_c.value;
+  }
 });
 hi_sm_d.addEventListener('input', (event) => {
-  localStorage.setItem('hi_sm_d', hi_sm_d.checked)
+  lss('hi_sm_d',"set", hi_sm_d.checked)
   if (hi_sm_d.checked) {
     hi_sm = true;
   } else {
@@ -242,8 +345,9 @@ hi_sm_d.addEventListener('input', (event) => {
   }
 });
 hi_u_d.addEventListener('input', (event) => {
-  localStorage.setItem('hi_u_d', hi_u_d.checked)
-  if (hi_u_d.checked) {
+  lss('hi_u_d',"set",event.target.checked.toString())
+  console.log(event.target.checked.toString())
+  if (event.target.checked) {
     hi_u = true;
   } else {
     hi_u = false;
@@ -291,28 +395,28 @@ hi_mm_c.addEventListener('change', (event) => {
   for (var i = 0; i < un1.length; i++) {
     un1[i].style.background = event.target.value;
   }
-  localStorage.setItem('hi_mm_c', hi_mm_c.value)
+  lss('hi_mm_c',"set", hi_mm_c.value)
 });
 hi_sm_c.addEventListener('change', (event) => {
   let un2 = document.querySelectorAll('.memory-verse-s')
   for (var i = 0; i < un2.length; i++) {
     un2[i].style.background = event.target.value;
   }
-  localStorage.setItem('hi_sm_c', hi_sm_c.value)
+  lss('hi_sm_c',"set", hi_sm_c.value)
 });
 hi_u_c.addEventListener('change', (event) => {
   let un3 = document.querySelectorAll('.uniqueword');
   for (var i = 0; i < un3.length; i++) {
     un3[i].style.color = event.target.value;
   }
-  localStorage.setItem('hi_u_c', hi_u_c.value)
+  lss('hi_u_c',"set", hi_u_c.value)
 });
 // a helper function to call when our request for dreams is done
 const gettextListener = function () {
   dreamsList.innerHTML = "";
   dreams = this.responseText.split(" 1 ");
   let dream = dreams[c].split(/[0-9]+/);
-  console.log(c)
+  //console.log(c)
   for (var j = 0; j < dream.length; j++) {
     if (c <= 13) {
       append("Hebrews " + c + ":" + (j + 1) + " " + dream[j], "H" + c + ":" + (j + 1));
@@ -348,7 +452,7 @@ const append = function (dream, id) {
       //var r = new RegExp(unique[k], "i");
       //console.log(unique[k])
       if (unique[k].test(dream)) dream = dream;
-      dream = dream.replace(unique[k], "<b class = 'uniqueword'> $1 </b>");
+      dream = dream.replace(unique[k], "<b style = 'color:"+lss('c_u_d',"get",false)+";' class = 'uniqueword'> $1 </b>");
     }
   }
   newListItem.innerHTML = dream;
@@ -358,6 +462,7 @@ const append = function (dream, id) {
     for (var i = 0; i < smemlist.length; i++) {
       if (id === smemlist[i]) {
         newListItem.className = "memory-verse-s";
+        newListItem.style.background = lss('c_sm_d',"get",false);
       }
     }
   }
@@ -365,9 +470,11 @@ const append = function (dream, id) {
     for (var i = 0; i < mmemlist.length; i++) {
       if (id === mmemlist[i].r1 || id === mmemlist[i].r2) {
         newListItem.className = "memory-verse-m";
+        newListItem.style.background = lss('c_mm_d',"get",false);
       }
     }
   }
-  console.log(newListItem)
+  //console.log(newListItem)
   dreamsList.appendChild(newListItem);
 }
+

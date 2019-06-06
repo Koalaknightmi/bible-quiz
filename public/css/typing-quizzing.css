@@ -1,0 +1,18 @@
+#quizzing{
+  position:absolute;
+  top:25px;
+}
+main{
+  margin:10px 10px 10px 10px;
+  padding:5px;
+}
+select{
+  margin:10px;
+  padding:10px;
+  font-size: .9rem;
+}
+#settings{
+  background:rgb(211, 211, 211);
+  padding:10px;
+  width:97vw;
+}
