@@ -5,28 +5,38 @@ const app = express();
 const server = http.Server(app);
 const io = socketio(server); // Attach socket.io to our server
 const email = "NazareneBibleQuizOnline@bible-quiz-online.glitch.me"
-
+const hbs = require('hbs');
 const webPush = require('web-push');
+var bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
+var fs = require('fs');
+const frameguard = require('frameguard')
+app.use(frameguard({
+  action: 'SAMEORIGIN'
+}))
+/*const testFolder = __dirname+'/veiws/partials';
 
+fs.readdir(testFolder, (err, files) => {
+  files.forEach(file => {
+    console.log(file);
+  });
+});
+*/
 if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
-  console.log("You must set the VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY "+
-    "environment variables. You can use the following ones:");
+  console.log("You must set the VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY " + "environment variables. You can use the following ones:");
   console.log(webPush.generateVAPIDKeys());
   //return;
 }
- 
-webPush.setVapidDetails(
-  'https://serviceworke.rs/',
-  process.env.VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-);
+webPush.setVapidDetails('https://serviceworke.rs/', process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
 const options = {
-  TTL: 1*60*60*24
+  TTL: 1 * 60 * 60 * 24
 };
-
+var usertimouts = {}
 var payload = "hi there";
 var Sequelize = require('sequelize');
-var fs = require('fs');
+const Op = Sequelize.Op;
 var ip = "";
 var log = console.log;
 var chat = [];
@@ -50,49 +60,129 @@ var sequelize = new Sequelize('database', process.env.DB_USER, process.env.DB_PA
     min: 0,
     idle: 10000
   },
-  storage: '.data/database.sqlite'
+  storage: '.data/database.sqlite',
+  logging: false
 });
 var onlineplayers = {};
-var Admins = [
-  "koalastrikermi",
-];
+var Admins = ["koalastrikermi", ];
 //var chatrooms = {};
 var User;
-var subsc;
-
-var push = (opt,to) =>{
-  if(to === ""){
-    User.findAll().then(users => {
+var typequizzingscores;
+var subs;
+var push = (opt, to) => {
+  if (to === "") {
+    subs.findAll().then(users => {
       for (var i in users) {
         console.log(users[i].dataValues.sub);
-            return webPush.sendNotification(users[i].dataValues.sub, opt)
-            .catch((err) => {
-              if (err.statusCode === 410) {
-                console.log(err)
-              } else {
-                console.log('Subscription is no longer valid: ', err);
+        return webPush.sendNotification(users[i].dataValues.sub, opt).catch((err) => {
+          if (err.statusCode === 410) {
+            //console.log(err)
+          }
+          else {
+            //console.log('Subscription is no longer valid: ', err);
+            subs.destroy({
+              where: {
+                sub: users[i].dataValues.sub
               }
             });
           }
+        });
+      }
     });
-  } else {
-    User.findOne({
+  }
+  else {
+    subs.findAll({
       where: {
         userName: to
       }
-    }).then(user => {
-      return webPush.sendNotification(user.dataValues.sub, opt)
-        .catch((err) => {
+    }).then(users => {
+      for (var i in users) {
+        return webPush.sendNotification(users[i].dataValues.sub, opt).catch((err) => {
           if (err.statusCode === 410) {
-            console.log(err)
-          } else {
-            console.log('Subscription is no longer valid: ', err);
+            //console.log(err)
+          }
+          else {
+            //console.log('Subscription is no longer valid: ', err);
+            subs.destroy({
+              where: {
+                sub: users[i].dataValues.sub
+              }
+            });
           }
         });
+      }
     });
   }
-  
 }
+var timeSince = function (date) {
+  if (typeof date !== 'object') {
+    date = new Date(date);
+  }
+  var seconds = Math.floor((new Date() - date) / 1000);
+  var intervalType;
+  var interval = Math.floor(seconds / 31536000);
+  if (interval >= 1) {
+    intervalType = 'year';
+  }
+  else {
+    interval = Math.floor(seconds / 2592000);
+    if (interval >= 1) {
+      intervalType = 'month';
+    }
+    else {
+      interval = Math.floor(seconds / 86400);
+      if (interval >= 1) {
+        intervalType = 'day';
+      }
+      else {
+        interval = Math.floor(seconds / 3600);
+        if (interval >= 1) {
+          intervalType = "hour";
+        }
+        else {
+          interval = Math.floor(seconds / 60);
+          if (interval >= 1) {
+            intervalType = "minute";
+          }
+          else {
+            interval = seconds;
+            intervalType = "second";
+          }
+        }
+      }
+    }
+  }
+  if (interval > 1 || interval === 0) {
+    intervalType += 's';
+  }
+  return interval + ' ' + intervalType + " ago";
+};
+//made by porter on khan academy https://www.Khanacademy.org/profile/battleboy21
+String.prototype.pad = function (l, s) {
+  return (l -= this.length) > 0 ? (s = new Array(Math.ceil(l / s.length) + 1).join(s)).substr(0, s.length) + this + s.substr(0, l - s.length) : this;
+};
+
+function totime(time) {
+  return Math.floor(time / 60) + ":" + (time % 60).toFixed().pad(2, "0")
+}
+/*hbs.registerHelper('filter', function (context, options) {
+  var a = context.sort(function (a, b) {
+    return b.score - a.score;
+  });
+  return options.fn(this) + "<td>" + a[0].score + "</td>"
+});*/
+var asort = (a,t,s) => {
+  if(t==="hl"){
+    return a.sort(function (a, b) {
+      return b[s] - a[s];
+    });
+  } else{
+    return a.sort(function (a, b) {
+      return a[s] - b[s];
+    });
+  }
+    
+} 
 
 function Player(id, username, col, r) {
   this.user = username;
@@ -109,109 +199,349 @@ function Player(id, username, col, r) {
   this.entity = null;
 }
 var gamerooms = {};
-sequelize.authenticate()
-  .then(function(err) {
-    console.log('sql Connection has been established successfully.');
-    // define a new table 'users'
-    User = sequelize.define('users', {
-      userName: {
-        type: Sequelize.STRING
-      },
-      email: {
-        type: Sequelize.STRING,
-        validate: {
-          notEmpty: true,
-          isEmail: true
-        }
-      },
-      password: {
-        type: Sequelize.STRING
-      },
-      lastLogin: {
-        type: Sequelize.DATE
-      },
-      isAdmin: {
-        type: Sequelize.BOOLEAN
-      },
-      visitNum: {
-        type: Sequelize.INTEGER
-      },
-      nameCOl: {
-        type: Sequelize.STRING
-      },
-      rankNum: {
-        type: Sequelize.INTEGER
-      },
-      gamesPlayed: {
-        type: Sequelize.INTEGER
-      },
-      online: {
-        type: Sequelize.BOOLEAN
-      },
-      inventory: {
-        type: Sequelize.JSON
-      },
-      friends: {
-        type: Sequelize.JSON
-      },
-      monthScore: {
-        type: Sequelize.INTEGER
-      },
-      allTimeScore: {
-        type: Sequelize.INTEGER
-      },
-      profileIMG: {
-        type: Sequelize.STRING
-      },
-      ipAD: {
-        type: Sequelize.STRING
-      },
-      banned: {
-        type: Sequelize.BOOLEAN
-      },
-      sub: {
-        type: Sequelize.JSON
-      }
-    });
-    setup()
-  })
-  .catch(function(err) {
-    console.log('Unable to connect to the database: ', err);
+sequelize.authenticate().then(function (err) {
+  console.log('sql Connection has been established successfully.');
+  // define a new table 'users'
+  User = sequelize.define('users', {
+    userName: {
+      type: Sequelize.STRING
+    },
+    email: {
+      type: Sequelize.STRING
+    },
+    password: {
+      type: Sequelize.STRING
+    },
+    lastLogin: {
+      type: Sequelize.DATE
+    },
+    isAdmin: {
+      type: Sequelize.BOOLEAN
+    },
+    visitNum: {
+      type: Sequelize.INTEGER
+    },
+    nameCOl: {
+      type: Sequelize.STRING
+    },
+    rankNum: {
+      type: Sequelize.INTEGER
+    },
+    gamesPlayed: {
+      type: Sequelize.INTEGER
+    },
+    online: {
+      type: Sequelize.BOOLEAN
+    },
+    tournaments: {
+      type: Sequelize.JSON
+    },
+    friends: {
+      type: Sequelize.JSON
+    },
+    monthScore: {
+      type: Sequelize.INTEGER
+    },
+    allTimeScore: {
+      type: Sequelize.INTEGER
+    },
+    profileIMG: {
+      type: Sequelize.STRING
+    },
+    state: {
+      type: Sequelize.STRING
+    },
+    ipAD: {
+      type: Sequelize.STRING
+    },
+    banned: {
+      type: Sequelize.BOOLEAN
+    }
   });
-
+  typequizzingscores = sequelize.define("typequizscores", {
+    userName: {
+      type: Sequelize.STRING
+    },
+    score: {
+      type: Sequelize.INTEGER
+    },
+    nameCOl: {
+      type: Sequelize.STRING
+    },
+    type: {
+      type: Sequelize.STRING
+    },
+    profileIMG: {
+      type: Sequelize.STRING
+    },
+    ch: {
+      type: Sequelize.STRING
+    }
+  })
+  subs = sequelize.define("subscriptions", {
+    userName: {
+      type: Sequelize.STRING
+    },
+    sub: {
+      type: Sequelize.JSON
+    }
+  })
+  setup()
+}).catch(function (err) {
+  console.log('Unable to connect to the database: ', err);
+});
 
 function setup() {
   User.sync({
-    force:false
+    force: false
   }) // We use 'force: true' in this example to drop the table users if it already exists, and create a new one. You'll most likely want to remove this setting in your own apps
   User.findAll().then(users => {
-    console.log(users); 
+    //console.log(users); 
   })
-  /*sequelize.query("ALTER TABLE users ADD banned TINYINT(1)").spread((results, metadata) => {
+  typequizzingscores.sync({
+    force: false
+  }) // We use 'force: true' in this example to drop the table users if it already exists, and create a new one. You'll most likely want to remove this setting in your own apps
+  typequizzingscores.findAll().then(scores => {
+    //console.log(scores); 
+  })
+  //sequelize.query("ALTER TABLE users RENAME COLUMN inventory TO tournaments").then(([results, metadata]) => {
+  // Results will be an empty array and metadata will contain the number of affected rows.
+  //})
+  subs.sync({
+    force: false
+  }) // We use 'force: true' in this example to drop the table users if it already exists, and create a new one. You'll most likely want to remove this setting in your own apps
+  subs.findAll().then(subs => {
+    //console.log(subs); 
+  })
+  /*typequizzingscores.update({
+            profileIMG:"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859"
+          }, {
+              where: {
+                userName: "koalastrikermi"
+              }
+            });*/
+  /*sequelize.query("ALTER TABLE typequizscores ADD ch TEXT").spread((results, metadata) => {
 })*/
+  /*typequizzingscores.update({
+          ch:"h1"
+        }, {
+            where: {
+              ch:null
+            }
+          });*/
 }
-
+/*hbs.registerHelper('noop', function (options) {
+  return JSON.stringify(options);
+});*/
+hbs.registerPartials(__dirname + '/veiws/partials');
+app.set('view engine', 'hbs');
+app.set('views', __dirname + '/veiws/');
+app.use((req, resp, next) => {
+  const now = new Date();
+  const time = `${now.toLocaleDateString()} - ${now.toLocaleTimeString()}`;
+  const path = `"${req.method} ${req.path}"`;
+  const m = `${req.ip} - ${time} - ${path}`;
+  // eslint-disable-next-line no-console
+  //console.log(m);
+  next();
+});
 app.use(express.static('public'));
-
-app.get('/', function(request, response) {
-  //console.log(request)
+app.get('/', function (request, response) {
+  ip = request.headers['x-forwarded-for'].split(",")[0]
   response.sendFile(__dirname + '/public/html/index.html');
 });
-
-app.get('/gettext', function(request, res) {
-  fs.readFile('hebrews-peter.txt', function(err, data) {
-    console.log(data);
-    res.writeHead(200, { 'Content-Type': 'text' });
+app.get('/gettext', function (request, res) {
+  fs.readFile('hebrews-peter.txt', function (err, data) {
+    //console.log(data);
+    res.writeHead(200, {
+      'Content-Type': 'text'
+    });
     res.write(data);
     res.end();
   });
 });
+app.get('/leaderboardfetch', function (request, res) {
+  //console.log("sending leaderboard")
+  typequizzingscores.findAll().then(scores => {
+    res.writeHead(200, {
+      'Content-Type': 'json'
+    });
+    res.write(JSON.stringify(scores));
+    res.end();
+  })
+});
 
-io.sockets.on('connection', function(socket) {
+app.post("/postquote",(request,res)=>{
+  var data = request.body;
+    User.findOne({
+      where: {
+        userName: data.user
+      }
+    }).then(user => {
+      if (user === null) {
+        console.log("verification failed");
+        //console.log("login failed " + data.user + " is not regestered");
+      }
+      else if (user.dataValues.password === data.pass) {
+    if (data.prompt === 0) {
+      prompt = false;
+    }
+    else {
+      prompt = true;
+    }
+    
+      typequizzingscores.create({
+        ch: data.ch,
+        userName: data.user,
+        score: data.score,
+        type: "quoted-" + prompt,
+        profileIMG: user.dataValues.profileIMG,
+        nameCOL: user.dataValues.nameCOl
+      });
+      
+      }
+      else {
+        console.log("verification failed");
+      }  
+    })
+})
+app.post("/postcomplete",(request,res)=>{
+  var data = request.body;
+    User.findOne({
+      where: {
+        userName: data.user
+      }
+    }).then(user => {
+      if (user === null) {
+        console.log("verification failed");
+        //console.log("login failed " + data.user + " is not regestered");
+      }
+      else if (user.dataValues.password === data.pass) {
+    if (data.prompt === 0) {
+      prompt = false;
+    }
+    else {
+      prompt = true;
+    }
+    
+      typequizzingscores.create({
+        ch: data.ch,
+        userName: data.user,
+        score: data.score,
+        type: "completed-" + prompt,
+        profileIMG: user.dataValues.profileIMG,
+        nameCOL: user.dataValues.nameCOl
+      });
+      
+      }
+      else {
+        console.log("verification failed");
+      }  
+    })
+})
+
+app.get('/user/:user', function (request, res) {
+  //console.log(request.params.user)
+  var username = request.params.user;
+  User.findOne({
+    where: {
+      userName: username
+    }
+  }).then(user => {
+    typequizzingscores.findAll({
+      where: {
+        userName: username
+      }
+    }).then(scores => {
+      var ts = {};
+      var sc = [];
+      var cts = [];
+      var qts = [];
+      var cpts = [];
+      var qpts = [];
+      for (var i = 0; i < scores.length; i++) {
+        scores[i].dataValues.createdAt = timeSince(scores[i].dataValues.createdAt)
+        if (scores[i].type.indexOf("quote") !== -1) {
+          scores[i].dataValues.score = totime(scores[i].dataValues.score);
+        }
+        if (scores[i].type === "quoted-true") {
+          scores[i].type = "quoted with prompt"
+          qpts.push(scores[i])
+        }
+        else if (scores[i].type === "quoted-false") {
+          scores[i].type = "quoted without prompt"
+          qts.push(scores[i])
+        }
+        else if (scores[i].type === "completed-false") {
+          scores[i].type = "completed without prompt"
+          cts.push(scores[i])
+        }
+        else {
+          scores[i].type = "completed with prompt"
+          cpts.push(scores[i])
+        } 
+        sc.push(scores[i].dataValues)
+        //console.log()
+      }
+      cts = asort(cts,"hl","score")
+      cpts = asort(cpts,"hl","score")
+      qpts = asort(qpts,"h","score")
+      qts = asort(qts,"h","score")
+      console.log(cts,cpts,qts,qpts)
+      ts = {c:cts[0],cp:cpts[0],q:qts[0],qp:qpts[0]};
+      //console.log(sc)
+      user.dataValues.email = "";
+      user.dataValues.lastLogin = timeSince(user.dataValues.lastLogin)
+      user.dataValues.state = user.dataValues.state.toUpperCase();
+      if (user.dataValues.friends) {
+        sequelize.query('SELECT * FROM users WHERE userName IN(:status) ', {
+          replacements: {
+            status: JSON.parse(user.dataValues.friends)
+          },
+          type: sequelize.QueryTypes.SELECT
+        }).then(users => {
+          for (var i = 0; i < users.length; i++) {
+            users[i].state = users[i].state.toUpperCase();
+          }
+          /*console.log({
+            userdata: user.dataValues,
+            scoresdata: sc,
+            friendsdata: users
+          })*/
+          res.render('user', {
+            userdata: user.dataValues,
+            scoresdata: sc,
+            friendsdata: users,
+            ts:ts
+          });
+        })
+      }
+      else {
+        /*console.log({
+              userdata: user.dataValues,
+              scoresdata: sc,
+              friendsdata: ""
+            })*/
+        res.render('user', {
+          userdata: user.dataValues,
+          scoresdata: sc,
+          friendsdata: "",
+          ts:ts
+        });
+      }
+    })
+  })
+});
+io.sockets.on('connection', function (socket) {
+  typequizzingscores.findAll().then(scores => {
+    for (var i in scores) {
+      //console.log(scores[i].dataValues);
+    }
+  })
   console.log('socket Connection has been established successfully.');
   User.findAll().then(users => {
     for (var i in users) {
-      console.log(users[i].dataValues.id, users[i].dataValues.userName,users[i].dataValues.sub);
+      //console.log(users[0].dataValues);
     }
     //console.log(users); 
   });
@@ -229,10 +559,10 @@ io.sockets.on('connection', function(socket) {
     io.emit("message",chat);
   });*/
   socket.on('vapidPublicKey', (data) => {
-    socket.emit("vpk",process.env.VAPID_PUBLIC_KEY)
-   }); // listen to the event
-  socket.on("register", function(data,sub) {
-    console.log(sub)
+    socket.emit("vpk", process.env.VAPID_PUBLIC_KEY)
+  }); // listen to the event
+  socket.on("register", function (data, sub) {
+    //console.log(sub)
     User.findOne({
       where: {
         userName: data.name
@@ -259,9 +589,13 @@ io.sockets.on('connection', function(socket) {
             profileIMG: "https://cdn.glitch.com/20e968ff-97d4-4430-83ad-42189e4f368d%2Favatar_generic.png?1545099848845",
             ipAD: ip,
             banned: false,
-            sub:sub
+            state: data.state
           });
-          console.log('user ' + data.name + ' registered');
+          subs.create({
+            userName: data.name,
+            sub: sub
+          })
+          //console.log('user ' + data.name + ' registered');
           socket.emit('registered', data.name);
           var id = socket.id;
           sendmail({
@@ -269,7 +603,7 @@ io.sockets.on('connection', function(socket) {
             to: data.email,
             subject: 'caedes hostis',
             html: 'welcome to caedes hostis one of the best and fastes fps multiplayer games on earth we hope you enjoy playing if u did not regester with this email plz report to <a href = "https://playcanvas.com/koalastrikermi">koalastrikermi<a> if u have playcanvas<br>or if u dont have playcanvas file a complaint here<br><iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfeSaOl-AXx5KaNQs-8Q-wP0vBOX4pBeukFIOzTAxw5erWOgQ/viewform?embedded=true" width="640" height="672" frameborder="0" marginheight="0" marginwidth="0">Loading...</iframe><br><br> (I will add other report options later) <br><br>signed,<br>the GeekyKoala <br>studios sorry for any inconvenience we may have caused you<br><br>Hope you enjoy',
-          }, function(err, reply) {
+          }, function (err, reply) {
             console.log(err && err.stack);
             console.dir(reply);
           });
@@ -277,7 +611,8 @@ io.sockets.on('connection', function(socket) {
             io.emit("leaderboard", users);
             //console.log(users);
           })
-        } else {
+        }
+        else {
           User.create({
             userName: data.name,
             email: data.email,
@@ -297,9 +632,13 @@ io.sockets.on('connection', function(socket) {
             profileIMG: "https://cdn.glitch.com/20e968ff-97d4-4430-83ad-42189e4f368d%2Favatar_generic.png?1545099848845",
             ipAD: ip,
             banned: false,
-            sub:sub
+            state: data.state
           });
-          console.log('user ' + data.name + ' registered');
+          subs.create({
+            userName: data.name,
+            sub: sub
+          })
+          //console.log('user ' + data.name + ' registered');
           socket.emit('registered', data.name);
           var id = socket.id;
           sendmail({
@@ -307,7 +646,7 @@ io.sockets.on('connection', function(socket) {
             to: data.email,
             subject: 'caedes hostis',
             html: 'welcome to caedes hostis one of the best and fastes fps multiplayer games on earth we hope you enjoy playing if u did not regester with this email plz report to <a href = "https://playcanvas.com/koalastrikermi">koalastrikermi<a> if u have playcanvas<br>or if u dont have playcanvas file a complaint here<br><iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfeSaOl-AXx5KaNQs-8Q-wP0vBOX4pBeukFIOzTAxw5erWOgQ/viewform?embedded=true" width="640" height="672" frameborder="0" marginheight="0" marginwidth="0">Loading...</iframe><br><br> (I will add other report options later) <br><br>signed,<br>the GeekyKoala studios sorry for any inconvenience',
-          }, function(err, reply) {
+          }, function (err, reply) {
             console.log(err && err.stack);
             console.dir(reply);
           });
@@ -335,15 +674,15 @@ io.sockets.on('connection', function(socket) {
         /*User.findAll().then(users => {
             console.log(users);
         })*/
-      } else {
+      }
+      else {
         socket.emit('already used', data.name);
         console.log(data.name + " username already used");
       }
     });
   });
-  socket.on("login attempt", function(data) {
-    
-    console.log("login attempt" + JSON.stringify(data));
+  socket.on("login attempt", function (data) {
+    //console.log("login attempt" + JSON.stringify(data));
     User.findOne({
       where: {
         userName: data.user
@@ -351,21 +690,25 @@ io.sockets.on('connection', function(socket) {
     }).then(users => {
       if (users === null) {
         socket.emit("login failed");
-        console.log("login failed " + data.user + " is not regestered");
-      } else if (users.dataValues.password === data.pass) {
+        //console.log("login failed " + data.user + " is not regestered");
+      }
+      else if (users.dataValues.password === data.pass) {
         //console.log(users);
         //console.log(users.dataValues.password);
         User.update({
           lastLogin: new Date(),
           visitNum: users.visitNum + 1,
-          online: true,
-          sub:data.sub
+          online: true
         }, {
-            where: {
-              userName: data.user
-            }
-          });
-        push(payload,data.user)
+          where: {
+            userName: data.user
+          }
+        });
+        subs.create({
+          userName: data.name,
+          sub: data.sub
+        })
+        push(payload, data.user)
         //console.log("logged in:"+users.password+" = "+data.pass);
         var id = socket.id;
         var newplayer = {
@@ -379,12 +722,11 @@ io.sockets.on('connection', function(socket) {
           onlineplayers: onlineplayers
         });*/
         //console.log(onlineplayers);
-
         User.findAll().then(users => {
           for (var i in users) {
-            console.log(users[i].dataValues.id, users[i].dataValues.userName);
+            //console.log(users[i].dataValues.id, users[i].dataValues.userName);
           }
-          socket.emit("leaderboard", users);
+          //socket.emit("leaderboard", users);
           socket.emit("logged in", data.user);
           onlinepls[socket.id] = {
             user: data.user
@@ -397,12 +739,12 @@ io.sockets.on('connection', function(socket) {
           });
           io.emit("message", chat);
         })
-      } else {
+      }
+      else {
         socket.emit("login failed");
-        console.log("login failed " + users.password + "!==" + data.pass);
+        //console.log("login failed " + users.password + "!==" + data.pass);
       }
     })
-
     /*socket.on("player moved", function (data) {
       if(!onlineplayers[data.id]) return;
       onlineplayers[data.id].x = data.x;
@@ -411,32 +753,119 @@ io.sockets.on('connection', function(socket) {
       //console.log(onlineplayers);
       socket.broadcast.emit("ingame players moved", data);
     });*/
-    socket.on("disconnect", function() {
-      if (!onlineplayers[socket.id]) return;
+  });
+  /*socket.on("quoted", (data) => {
+    //console.log(data)
+    User.findOne({
+      where: {
+        userName: data.user
+      }
+    }).then(user => {
+      if (user === null) {
+        socket.emit("login failed");
+        //console.log("login failed " + data.user + " is not regestered");
+      }
+      else if (user.dataValues.password === data.pass) {
+    if (data.prompt === 0) {
+      prompt = false;
+    }
+    else {
+      prompt = true;
+    }
+    
+      typequizzingscores.create({
+        ch: data.ch,
+        userName: data.user,
+        score: data.score,
+        type: "quoted-" + prompt,
+        profileIMG: user.dataValues.profileIMG,
+        nameCOL: user.dataValues.nameCOl
+      });
+      
+      }
+      else {
+        socket.emit("login failed");
+      }  
+    })
+  })
+  socket.on("completed", (data) => {
+    User.findOne({
+      where: {
+        userName: data.user
+      }
+    }).then(user => {
+      if (user === null) {
+        socket.emit("login failed");
+        //console.log("login failed " + data.user + " is not regestered");
+      }
+      else if (user.dataValues.password === data.pass) {
+    if (data.prompt === 0) {
+      prompt = false;
+    }
+    else {
+      prompt = true;
+    }
+      typequizzingscores.create({
+        ch: data.ch,
+        userName: data.user,
+        score: data.score,
+        type: "completed-" + prompt,
+        profileIMG: user.dataValues.profileIMG,
+        nameCOL: user.dataValues.nameCOl
+      });
+      }
+      else {
+        socket.emit("login failed");
+      }  
+    })
+  })*/
+  socket.on("idle", (user) => {
+    //console.log(user + " left")
+    usertimouts[user] = setTimeout(function () {
       User.update({
         online: false
       }, {
-          where: {
-            userName: onlineplayers[socket.id].user
-          }
-        });
-      delete onlineplayers[socket.id];
-      // Update clients with the new player killed 
-      socket.broadcast.emit('leave', socket.id);
-      if (!onlinepls) return;
-      if (onlinepls[socket.id] !== undefined) {
-        var l = onlinepls[socket.id].user;
-        chat.unshift({
-          col: "black",
-          user: 'bot',
-          message: l + ' is offline now',
-          timesince: new Date().toISOString()
-        });
-      }
-      delete onlinepls[socket.id];
+        where: {
+          userName: user
+        }
+      });
+    }, 2000 * 60 * 4.9);
+  })
+  socket.on("active", (user) => {
+    //console.log(user + " came back")
+    clearTimeout(usertimouts[user]);
+  })
+  
+  /*socket.on('getleaderboard', function (fn) {
+    typequizzingscores.findAll().then(scores => {
+      console.log(scores); 
+      fn(scores);
+    })
+  });*/
+  socket.on("disconnect", function () {
+    /*if (!onlineplayers[socket.id]) return;
+    User.update({
+      online: false
+    }, {
+        where: {
+          userName: onlineplayers[socket.id].user
+        }
+      });delete onlineplayers[socket.id];
+    // Update clients with the new player killed 
+    socket.broadcast.emit('leave', socket.id);
+    if (!onlinepls) return;
+    if (onlinepls[socket.id] !== undefined) {
+      var l = onlinepls[socket.id].user;
+      chat.unshift({
+        col: "black",
+        user: 'bot',
+        message: l + ' is offline now',
+        timesince: new Date().toISOString()
+      });
+    }
+    delete onlinepls[socket.id];
 
-      io.emit("message", chat);
-    });
+    io.emit("message", chat);*/
   });
 });
 console.log('Server started.');

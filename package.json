@@ -16,7 +16,9 @@
     "sequelize": "^5.3.0",
     "sqlite3": "^4.0.4",
     "sendmail": "^1.4.1",
-    "web-push": "3.3.5"
+    "web-push": "3.3.5",
+    "hbs": "^4.0.4",
+    "frameguard": "^3.1.0"
   },
   "engines": {
     "node": "8.x"
