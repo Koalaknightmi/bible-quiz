@@ -34,9 +34,11 @@ var error = new Audio('https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85
 var tex = ""
 var te = "";
 te = te.split(/[0-9]+\s/);
+
 var socket = window.socket;
 var quote = true;
 var complete = true;
+
 var key;
 var started = false;
 var prompt = (complete) ? 0 : 3;
@@ -348,7 +350,6 @@ document.addEventListener("keydown", function (e) {
     }
   }
 });
-
 
 var countIt = function () {
   //console.log(parseFloat(time))

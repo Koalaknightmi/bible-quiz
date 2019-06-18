@@ -106,6 +106,7 @@ const hi_sm_c = document.querySelector('#s-m-c');
 const hi_u_c = document.querySelector('#u-w-c');
 var mylocalkey = "koalastrikermi-bbqo-";
 const ScriptureAudioBtn = document.querySelector('#s-audio-btn');
+
 const ch_set = document.querySelector('#ch-select');
 
 const ls = {
@@ -412,6 +413,7 @@ hi_u_c.addEventListener('change', (event) => {
     un3[i].style.color = event.target.value;
   }
   lss('hi_u_c',"set", hi_u_c.value)
+
 });
 var playing = false;
 ScriptureAudioBtn.addEventListener("click", (e) =>{
@@ -432,6 +434,7 @@ ScriptureAudioBtn.addEventListener("click", (e) =>{
     window.responsiveVoice.cancel();
   }
   
+
 });
 
 // a helper function to call when our request for dreams is done

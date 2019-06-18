@@ -139,6 +139,7 @@ self.addEventListener('fetch', function (evt) {
   );
 });
 
+
 self.addEventListener('push', function (event) {
   console.log(event.data)
   const payload = event.data ? event.data.text() : 'no payload';
@@ -146,7 +147,9 @@ self.addEventListener('push', function (event) {
     body: payload,
     icon: "/images/NBQO logo.jpg",
     /*image: "https://cdn.glitch.com/project-avatar/cfc340a0-db08-47ab-ae0f-2f9aacd8294c.png?1559424076873",*/
+
     badge: "https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2Fimage%20(4).png?v=1560030827542",
+
     vibrate: [100, 100, 100, 200, 300, 100, 100, 100],
     sound: "https://cdn.glitch.com/cfc340a0-db08-47ab-ae0f-2f9aacd8294c%2Fnotif.mp3",
     /* actions: [
@@ -169,23 +172,24 @@ self.addEventListener('push', function (event) {
   );
 });
 self.addEventListener('notificationclick', function (event) {
+
   console.log(event)
+
   if (!event.action) {
     // Was a normal notification click
     console.log('Notification Click.');
     const urlToOpen = new URL("/", self.location.origin).href;
-    
     const promiseChain = clients.matchAll({
         type: 'window',
         includeUncontrolled: true
       })
       .then((windowClients) => {
         let matchingClient = null;
-        console.log(windowClients)
         for (let i = 0; i < windowClients.length; i++) {
           const windowClient = windowClients[i];
           if (windowClient.url === urlToOpen) {
             matchingClient = windowClient;
+
             matchingClient.postMessage({
               message: 'Received a push message.',
               time: new Date().toString()
@@ -199,7 +203,6 @@ self.addEventListener('notificationclick', function (event) {
           return matchingClient.focus();
         } else {
           event.notification.close();
-          //return clients.openWindow(urlToOpen);
         }
       });
 
