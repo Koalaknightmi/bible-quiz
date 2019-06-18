@@ -1,5 +1,7 @@
 dependencies:
   express: 4.17.1
+  frameguard: 3.1.0
+  hbs: 4.0.4
   sendmail: 1.4.1
   sequelize: 5.8.7
   socket.io: 2.2.0
@@ -107,6 +109,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-jp/uFnooOiO+L211eZOoSyzpOITMXx1rBITauYykG3BRYPu8h0UcxsPNB04RR5vo4Tyz3+ay17tR6JVf9qzYWg==
+  /async/2.6.2:
+    dependencies:
+      lodash: 4.17.11
+    dev: false
+    resolution:
+      integrity: sha512-H1qVYh1MYhEEFLsP97cVKqCGo7KfCyTt6uEWqsTBr9SO84oK9Uwbyd/yCW+6rKJLHksBNUVWZDAjfS+Ccx0Bbg==
   /asynckit/0.4.0:
     dev: false
     resolution:
@@ -242,6 +250,11 @@ packages:
       node: '>= 0.8'
     resolution:
       integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==
+  /commander/2.20.0:
+    dev: false
+    optional: true
+    resolution:
+      integrity: sha512-7j2y+40w61zy6YC2iRNpUe/NwhNyoXrYpHMrSunaMG64nRnaf96zO/KMQR4OyN/UnE5KLyEBnKHd4aG3rskjpQ==
   /component-bind/1.0.0:
     dev: false
     resolution:
@@ -526,6 +539,10 @@ packages:
       node: '>= 0.8'
     resolution:
       integrity: sha512-aAWcW57uxVNrQZqFXjITpW3sIUQmHGG3qSb9mUah9MgMC4NeWhNOlNjXEYq3HjRAvL6arUviZGGJsBg6z0zsWA==
+  /foreachasync/3.0.0:
+    dev: false
+    resolution:
+      integrity: sha1-VQKYfchxS+M5IJfzLgBxyd7gfPY=
   /forever-agent/0.6.1:
     dev: false
     resolution:
@@ -546,6 +563,12 @@ packages:
       node: '>= 0.6'
     resolution:
       integrity: sha1-mMI9qxF1ZXuMBXPozszZGw/xjIQ=
+  /frameguard/3.1.0:
+    dev: false
+    engines:
+      node: '>=4.0.0'
+    resolution:
+      integrity: sha512-TxgSKM+7LTA6sidjOiSZK9wxY0ffMPY3Wta//MqwmX0nZuEHc8QrkV8Fh3ZhMJeiH+Uyh/tcaarImRy8u77O7g==
   /fresh/0.5.2:
     dev: false
     engines:
@@ -592,6 +615,19 @@ packages:
     dev: false
     resolution:
       integrity: sha512-hkLPepehmnKk41pUGm3sYxoFs/umurYfYJCerbXEyFIWcAzvpipAgVkBqqT9RBKMGjnq6kMuyYwha6csxbiM1A==
+  /handlebars/4.0.14:
+    dependencies:
+      async: 2.6.2
+      optimist: 0.6.1
+      source-map: 0.6.1
+    dev: false
+    engines:
+      node: '>=0.4.7'
+    hasBin: true
+    optionalDependencies:
+      uglify-js: 3.6.0
+    resolution:
+      integrity: sha512-E7tDoyAA8ilZIV3xDJgl18sX3M8xB9/fMw8+mfW4msLW8jlX97bAnWgT3pmaNXuvzIEgSBMnAHfuXsB2hdzfow==
   /har-schema/2.0.0:
     dev: false
     engines:
@@ -621,6 +657,15 @@ packages:
     dev: false
     resolution:
       integrity: sha1-4Ob+aijPUROIVeCG0Wkedx3iqLk=
+  /hbs/4.0.4:
+    dependencies:
+      handlebars: 4.0.14
+      walk: 2.3.9
+    dev: false
+    engines:
+      node: '>= 0.8.0'
+    resolution:
+      integrity: sha512-esVlyV/V59mKkwFai5YmPRSNIWZzhqL5YMN0++ueMxyK1cCfPa5f6JiHtapPKAIVAhQR6rpGxow0troav9WMEg==
   /http-errors/1.7.2:
     dependencies:
       depd: 1.1.2
@@ -879,6 +924,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-yJHVQEhyqPLUTgt9B83PXu6W3rx4MvvHvSUvToogpwoGDOUQ+yDrR0HRot+yOCdCO7u4hX3pWft6kWBBcqh0UA==
+  /minimist/0.0.10:
+    dev: false
+    resolution:
+      integrity: sha1-3j+YVD2/lggr5IrRoMfNqDYwHc8=
   /minimist/0.0.8:
     dev: false
     resolution:
@@ -1034,6 +1083,13 @@ packages:
     dev: false
     resolution:
       integrity: sha1-WDsap3WWHUsROsF9nFC6753Xa9E=
+  /optimist/0.6.1:
+    dependencies:
+      minimist: 0.0.10
+      wordwrap: 0.0.3
+    dev: false
+    resolution:
+      integrity: sha1-2j6nRob6IaGaERwybpDrFaAZZoY=
   /os-homedir/1.0.2:
     dev: false
     engines:
@@ -1348,6 +1404,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-wxXrIuZ8AILcn+f1B4ez4hJTPG24iNgxBBDaJfT6MsyOhVYiTXWexGoPkd87ktJG8kQEcL/NBvRi64+9k4Kc0w==
+  /source-map/0.6.1:
+    dev: false
+    engines:
+      node: '>=0.10.0'
+    resolution:
+      integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
   /sqlite3/4.0.8:
     dependencies:
       nan: 2.14.0
@@ -1483,6 +1545,17 @@ packages:
       node: '>= 0.6'
     resolution:
       integrity: sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==
+  /uglify-js/3.6.0:
+    dependencies:
+      commander: 2.20.0
+      source-map: 0.6.1
+    dev: false
+    engines:
+      node: '>=0.8.0'
+    hasBin: true
+    optional: true
+    resolution:
+      integrity: sha512-W+jrUHJr3DXKhrsS7NUVxn3zqMOFn0hL/Ei6v0anCIMoKC93TjcflTagwIHLW7SfMFfiQuktQyFVCFHGUE0+yg==
   /unpipe/1.0.0:
     dev: false
     engines:
@@ -1536,6 +1609,12 @@ packages:
       '0': node >=0.6.0
     resolution:
       integrity: sha1-OhBcoXBTr1XW4nDB+CiGguGNpAA=
+  /walk/2.3.9:
+    dependencies:
+      foreachasync: 3.0.0
+    dev: false
+    resolution:
+      integrity: sha1-MbTbZnjyrgHDnqn7hyWpAx5Vins=
   /web-push/3.3.5:
     dependencies:
       asn1.js: 5.0.1
@@ -1562,6 +1641,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-LHxXlzRCYQXA9ZHgs8r7Gafh0gVOE8o3QmudM1PIkOdkXXjW7Thcl+gb2P2dRuKgW8cqkitCRZkkjtmWzpHi7A==
+  /wordwrap/0.0.3:
+    dev: false
+    engines:
+      node: '>=0.4.0'
+    resolution:
+      integrity: sha1-o9XabNXAvAAI03I0u68b7WMFkQc=
   /wrappy/1.0.2:
     dev: false
     resolution:
@@ -1591,6 +1676,8 @@ shrinkwrapMinorVersion: 9
 shrinkwrapVersion: 3
 specifiers:
   express: ^4.16.4
+  frameguard: ^3.1.0
+  hbs: ^4.0.4
   sendmail: ^1.4.1
   sequelize: ^5.3.0
   socket.io: ^2.2.0

@@ -105,6 +105,7 @@ const hi_mm_c = document.querySelector('#m-m-c');
 const hi_sm_c = document.querySelector('#s-m-c');
 const hi_u_c = document.querySelector('#u-w-c');
 var mylocalkey = "koalastrikermi-bbqo-";
+const ScriptureAudioBtn = document.querySelector('#s-audio-btn');
 
 const ch_set = document.querySelector('#ch-select');
 
@@ -213,6 +214,8 @@ if (ch.indexOf("1p") !== -1) {
 } else {
   c = ch.split("h")[1]
 }
+
+
 
 ch_set.addEventListener('change', (event) => {
   console.log(ch_set.value);
@@ -410,7 +413,30 @@ hi_u_c.addEventListener('change', (event) => {
     un3[i].style.color = event.target.value;
   }
   lss('hi_u_c',"set", hi_u_c.value)
+
 });
+var playing = false;
+ScriptureAudioBtn.addEventListener("click", (e) =>{
+  var ver = document.querySelectorAll(".verse");
+  console.log(ver)
+  var tospeak = [];
+  for(var i = 0;i<ver.length;i++){
+    tospeak.push(ver[i].innerText.replace(/([0-9]+):([0-9]+)/g,"$1 verse $2,"))
+  }
+  if(!playing){
+    console.log(tospeak)
+    for(var j = 0;j<tospeak.length;j++){
+      window.responsiveVoice.speak(tospeak[j],"US English Male",{pitch: 1, volume: 0.5, rate: 1});
+    }
+    playing = true;
+  } else{
+    playing = false
+    window.responsiveVoice.cancel();
+  }
+  
+
+});
+
 // a helper function to call when our request for dreams is done
 const gettextListener = function () {
   dreamsList.innerHTML = "";
@@ -461,7 +487,7 @@ const append = function (dream, id) {
   if (hi_sm) {
     for (var i = 0; i < smemlist.length; i++) {
       if (id === smemlist[i]) {
-        newListItem.className = "memory-verse-s";
+        newListItem.classList.add("memory-verse-s")
         newListItem.style.background = lss('c_sm_d',"get",false);
       }
     }
@@ -469,7 +495,7 @@ const append = function (dream, id) {
   if (hi_mm) {
     for (var i = 0; i < mmemlist.length; i++) {
       if (id === mmemlist[i].r1 || id === mmemlist[i].r2) {
-        newListItem.className = "memory-verse-m";
+        newListItem.classList.add("memory-verse-m")
         newListItem.style.background = lss('c_mm_d',"get",false);
       }
     }
