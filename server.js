@@ -8,14 +8,31 @@ const email = "NazareneBibleQuizOnline@bible-quiz-online.glitch.me"
 const hbs = require('hbs');
 const webPush = require('web-push');
 var bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({
-  extended: true
-}));
+var serveIndex = require('serve-index');
+var serveStatic = require('serve-static')
 var fs = require('fs');
 const frameguard = require('frameguard')
-app.use(frameguard({
+/*app.use(frameguard({
   action: 'SAMEORIGIN'
-}))
+}))*/
+app.use(express.json()) // for parsing application/json
+app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
+app.use('/files', serveIndex('/', {'icons': true}));
+app.use('/files', serveStatic('/'));
+
+app.post("/test",(req,res)=>{
+  console.log(req.body)// so when you run 
+  /*
+  fetch('/test', {
+        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        headers: { 'Content-Type': 'application/json' }, 👈 don't forget this! thx
+        body: JSON.stringify({a: 1, b: 2}), // body data type must match "Content-Type" header
+    });
+    that in the console when veiwing the page its sopposed to log the body but it ist working plz help
+  */
+  console.log('form body:', req.body, req.get('content-type'))
+  res.end(); // 👈 don't forget this!
+}); 
 /*const testFolder = __dirname+'/veiws/partials';
 
 fs.readdir(testFolder, (err, files) => {
@@ -172,16 +189,24 @@ function totime(time) {
   return options.fn(this) + "<td>" + a[0].score + "</td>"
 });*/
 var asort = (a,t,s) => {
-  if(t==="hl"){
-    return a.sort(function (a, b) {
-      return b[s] - a[s];
-    });
-  } else{
-    return a.sort(function (a, b) {
-      return a[s] - b[s];
-    });
+  //console.log(a)
+  let ha = [];
+  let ha2 = {};
+  for(var i = 0;i<a.length;i++){
+    if(ha.indexOf(a[i].ch)===-1){
+      ha.push(a[i].ch);
+      ha2[a[i].ch] = a[i]
+      //console.log(a[i].ch);
+    }
+    else if(t==="hl"&&a[i].score>ha2[a[i].ch].score){
+      ha2[a[i].ch] = a[i]
+    }
+    else if(a[i].score<ha2[a[i].ch].score){
+      ha2[a[i].ch] = a[i]
+    }
   }
-    
+//console.log(ha2)
+return ha2;
 } 
 
 function Player(id, username, col, r) {
@@ -304,6 +329,12 @@ function setup() {
   typequizzingscores.findAll().then(scores => {
     //console.log(scores); 
   })
+  typequizzingscores.sync({
+    force: false
+  }) // We use 'force: true' in this example to drop the table users if it already exists, and create a new one. You'll most likely want to remove this setting in your own apps
+  typequizzingscores.findAll().then(scores => {
+    //console.log(scores); 
+  })
   //sequelize.query("ALTER TABLE users RENAME COLUMN inventory TO tournaments").then(([results, metadata]) => {
   // Results will be an empty array and metadata will contain the number of affected rows.
   //})
@@ -336,7 +367,7 @@ function setup() {
 hbs.registerPartials(__dirname + '/veiws/partials');
 app.set('view engine', 'hbs');
 app.set('views', __dirname + '/veiws/');
-app.use((req, resp, next) => {
+/*app.use((req, resp, next) => {
   const now = new Date();
   const time = `${now.toLocaleDateString()} - ${now.toLocaleTimeString()}`;
   const path = `"${req.method} ${req.path}"`;
@@ -344,8 +375,9 @@ app.use((req, resp, next) => {
   // eslint-disable-next-line no-console
   //console.log(m);
   next();
-});
+});*/
 app.use(express.static('public'));
+
 app.get('/', function (request, response) {
   ip = request.headers['x-forwarded-for'].split(",")[0]
   response.sendFile(__dirname + '/public/html/index.html');
@@ -371,8 +403,9 @@ app.get('/leaderboardfetch', function (request, res) {
   })
 });
 
-app.post("/postquote",(request,res)=>{
-  var data = request.body;
+app.post("/postquote",(req,res) => {
+  var data = req.body;
+  console.log(data)
     User.findOne({
       where: {
         userName: data.user
@@ -382,7 +415,7 @@ app.post("/postquote",(request,res)=>{
         console.log("verification failed");
         //console.log("login failed " + data.user + " is not regestered");
       }
-      else if (user.dataValues.password === data.pass) {
+      else if (user.dataValues.password === data.pw) {
     if (data.prompt === 0) {
       prompt = false;
     }
@@ -396,17 +429,23 @@ app.post("/postquote",(request,res)=>{
         score: data.score,
         type: "quoted-" + prompt,
         profileIMG: user.dataValues.profileIMG,
-        nameCOL: user.dataValues.nameCOl
+        nameCOl: user.dataValues.nameCOl
       });
-      
+    res.writeHead(200, {
+      'Content-Type': 'application/json'
+    });
+    
+    res.end();
       }
       else {
         console.log("verification failed");
       }  
     })
+  
 })
-app.post("/postcomplete",(request,res)=>{
-  var data = request.body;
+app.post("/postcomplete",(req,res) => {
+  var data = req.body;
+  console.log(data)
     User.findOne({
       where: {
         userName: data.user
@@ -416,7 +455,7 @@ app.post("/postcomplete",(request,res)=>{
         console.log("verification failed");
         //console.log("login failed " + data.user + " is not regestered");
       }
-      else if (user.dataValues.password === data.pass) {
+      else if (user.dataValues.password === data.pw) {
     if (data.prompt === 0) {
       prompt = false;
     }
@@ -432,12 +471,97 @@ app.post("/postcomplete",(request,res)=>{
         profileIMG: user.dataValues.profileIMG,
         nameCOL: user.dataValues.nameCOl
       });
-      
+    res.writeHead(200, {
+      'Content-Type': 'application/json'
+    });
+    
+    res.end();
       }
       else {
         console.log("verification failed");
       }  
     })
+  
+})
+app.post("/vpostquote",(req,res) => {
+  var data = req.body;
+  console.log(data)
+    User.findOne({
+      where: {
+        userName: data.user
+      }
+    }).then(user => {
+      if (user === null) {
+        console.log("verification failed");
+        //console.log("login failed " + data.user + " is not regestered");
+      }
+      else if (user.dataValues.password === data.pw) {
+    if (data.prompt === 0) {
+      prompt = false;
+    }
+    else {
+      prompt = true;
+    }
+    
+      typequizzingscores.create({
+        ch: data.ch,
+        userName: data.user,
+        score: data.score,
+        type: "quoted-" + prompt+"-v",
+        profileIMG: user.dataValues.profileIMG,
+        nameCOl: user.dataValues.nameCOl
+      });
+    res.writeHead(200, {
+      'Content-Type': 'application/json'
+    });
+    
+    res.end();
+      }
+      else {
+        console.log("verification failed");
+      }  
+    })
+  
+})
+app.post("/vpostcomplete",(req,res) => {
+  var data = req.body;
+  console.log(data)
+    User.findOne({
+      where: {
+        userName: data.user
+      }
+    }).then(user => {
+      if (user === null) {
+        console.log("verification failed");
+        //console.log("login failed " + data.user + " is not regestered");
+      }
+      else if (user.dataValues.password === data.pw) {
+    if (data.prompt === 0) {
+      prompt = false;
+    }
+    else {
+      prompt = true;
+    }
+    
+      typequizzingscores.create({
+        ch: data.ch,
+        userName: data.user,
+        score: data.score,
+        type: "completed-" + prompt+"-v",
+        profileIMG: user.dataValues.profileIMG,
+        nameCOL: user.dataValues.nameCOl
+      });
+    res.writeHead(200, {
+      'Content-Type': 'application/json'
+    });
+    
+    res.end();
+      }
+      else {
+        console.log("verification failed");
+      }  
+    })
+  
 })
 
 app.get('/user/:user', function (request, res) {
@@ -466,29 +590,30 @@ app.get('/user/:user', function (request, res) {
         }
         if (scores[i].type === "quoted-true") {
           scores[i].type = "quoted with prompt"
-          qpts.push(scores[i])
+          qpts.push(scores[i].dataValues)
         }
         else if (scores[i].type === "quoted-false") {
           scores[i].type = "quoted without prompt"
-          qts.push(scores[i])
+          qts.push(scores[i].dataValues)
         }
         else if (scores[i].type === "completed-false") {
           scores[i].type = "completed without prompt"
-          cts.push(scores[i])
+          cts.push(scores[i].dataValues)
         }
         else {
           scores[i].type = "completed with prompt"
-          cpts.push(scores[i])
+          cpts.push(scores[i].dataValues)
         } 
         sc.push(scores[i].dataValues)
         //console.log()
       }
-      cts = asort(cts,"hl","score")
+      //cts = asort(cts,"hl","score")
       cpts = asort(cpts,"hl","score")
-      qpts = asort(qpts,"h","score")
-      qts = asort(qts,"h","score")
-      console.log(cts,cpts,qts,qpts)
-      ts = {c:cts[0],cp:cpts[0],q:qts[0],qp:qpts[0]};
+      /*qpts = asort(qpts,"h","score")
+      qts = asort(qts,"h","score")*/
+      
+      ts = {c:cts,cp:cpts,q:qts,qp:qpts};
+      //console.log(ts)
       //console.log(sc)
       user.dataValues.email = "";
       user.dataValues.lastLogin = timeSince(user.dataValues.lastLogin)

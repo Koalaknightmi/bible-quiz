@@ -34,11 +34,9 @@ var error = new Audio('https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85
 var tex = ""
 var te = "";
 te = te.split(/[0-9]+\s/);
-
 var socket = window.socket;
 var quote = true;
 var complete = true;
-
 var key;
 var started = false;
 var prompt = (complete) ? 0 : 3;
@@ -67,7 +65,7 @@ var sbtn = document.getElementById("type-start-btn");
 var set = document.getElementById("settings");
 var vchange = (quote) ? verse + 1 : random(0, te.length - 1);
 console.log("verse now = " + (verse + 1))
-var mylocalkey = "koalastrikermi-caedeshostis-";
+var mylocalkey = "koalastrikermi-bbqo-";
 var log = function(t, deco, type) {
     if (type === "normal" || type === undefined) {
         if (deco === "") {
@@ -113,38 +111,40 @@ var log = function(t, deco, type) {
 var localsave = function(vare, gs, t) {
     if (gs === "set") {
         localStorage.setItem(mylocalkey + vare, t);
-        log("localstorage item " + mylocalkey + vare + " is now set to: " + localStorage.getItem(mylocalkey + vare));
+        //log("localstorage item " + mylocalkey + vare + " is now set to: " + localStorage.getItem(mylocalkey + vare));
     } else if (gs === "get") {
-        log("localstorage item " + mylocalkey + vare + " was returned as: " + localStorage.getItem(mylocalkey + vare));
+        //log("localstorage item " + mylocalkey + vare + " was returned as: " + localStorage.getItem(mylocalkey + vare));
         return localStorage.getItem(mylocalkey + vare);
     } else if (gs === "devare") {
-        log(mylocalkey + vare + "  was devared");
+        //log(mylocalkey + vare + "  was devared");
         localStorage.removeItem(mylocalkey + vare);
     }
 };
 var nextver = (v) =>{
-  console.log("verse = "+v)
-  var text = te[verse];
-  text = text.replace(/([^abcdefghijklmnopqrstuvwxyz\s0-9])([^abcdefghijklmnopqrstuvwxyz\s0-9])/gi, "$1$2 ").split(/\s/g);
-  //console.log(text);
-  //console.log("verse="+vchange);
-  if (text[text.length - 1] === "") {
-    text.pop();
+  if (verse < te.length) {
+    console.log("verse = "+v)
+    var text = te[verse];
+    text = text.replace(/([^abcdefghijklmnopqrstuvwxyz\s0-9])([^abcdefghijklmnopqrstuvwxyz\s0-9])/gi, "$1$2 ").split(/\s/g);
+    //console.log(text);
+    //console.log("verse="+vchange);
+    if (text[text.length - 1] === "") {
+      text.pop();
+    }
+    domver.innerHTML = "";
+    score += 10;
+    domscore.innerHTML = "score: " + score;
+    //console.log("verse now = " + (verse + 1))
+    domref.innerHTML = book + " " + chapter + ":" + (verse+1);
+    cur = prompt;
+    for (var i = 0; i < cur; i++) {
+      domver.innerHTML += te[verse].replace(/([^abcdefghijklmnopqrstuvwxyz\s0-9])([^abcdefghijklmnopqrstuvwxyz\s0-9])/gi, "$1 $2").split(/\s/g)[i] + " ";
+      window.responsiveVoice.speak(te[verse].replace(/([^abcdefghijklmnopqrstuvwxyz\s0-9])([^abcdefghijklmnopqrstuvwxyz\s0-9])/gi, "$1 $2").split(/\s/g)[i],"US English Male",{pitch: 1, volume: 0.5, rate: 1});
+    }
+    wbox(text);
+    /*console.log(text[cur] + "-word")
+    var dword = document.getElementById(text[cur].replace(/[-\/\\^$*+?.,()|[\]{}]/g, '-') + "-word");
+    dword.style.display = "none";*/
   }
-  domver.innerHTML = "";
-  score += 10;
-  domscore.innerHTML = "score: " + score;
-  //console.log("verse now = " + (verse + 1))
-  domref.innerHTML = book + " " + chapter + ":" + (verse+1);
-  cur = prompt;
-  for (var i = 0; i < cur; i++) {
-    domver.innerHTML += te[verse].replace(/([^abcdefghijklmnopqrstuvwxyz\s0-9])([^abcdefghijklmnopqrstuvwxyz\s0-9])/gi, "$1 $2").split(/\s/g)[i] + " ";
-    window.responsiveVoice.speak(te[verse].replace(/([^abcdefghijklmnopqrstuvwxyz\s0-9])([^abcdefghijklmnopqrstuvwxyz\s0-9])/gi, "$1 $2").split(/\s/g)[i],"US English Male",{pitch: 1, volume: 0.5, rate: 1});
-  }
-  wbox(text);
-  /*console.log(text[cur] + "-word")
-  var dword = document.getElementById(text[cur].replace(/[-\/\\^$*+?.,()|[\]{}]/g, '-') + "-word");
-  dword.style.display = "none";*/
 }
 var wbox = function (text) {
   wordbox.innerHTML = "";
@@ -208,21 +208,29 @@ var wbox = function (text) {
   }
 }
 
-function postData(url = '', data = {}) {
-  // Default options are marked with *
-    return fetch(url, {
-        method: 'POST', // *GET, POST, PUT, DELETE, etc.
-        body: JSON.stringify(data), // body data type must match "Content-Type" header
-    })
-    .then(response => response.json()); // parses JSON response into native Javascript objects 
+function postData(url, data, then) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", url);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onload = () => resolve(xhr.responseText);
+    xhr.onerror = () => reject(xhr.statusText);
+    xhr.send(data);
+  }).then((successMessage) => {
+    then(successMessage);
+  })
+  .catch(error => {
+    console.log("no internet doing default",error,JSON.stringify(data))
+    location.reload();
+  });
 }
 
 sbtn.addEventListener('click', (e) => {
   //console.log(verse)
   prompt = (complete) ? 0 : 3;
   cur = prompt;
-  verse = (quote) ? 0 : random(0, te.length - 1);
-  count = (quote) ? 0 : 3;
+  verse = (quote) ? 13 : random(0, te.length - 1);
+  count = (quote) ? 0 : 300;
   time = count;
   dtimer.textContent = Math.floor(time / 60) + ":" + (time % 60 ? time % 60 : '00');
   up = (quote) ? 1 : -1;
@@ -277,7 +285,6 @@ pset.addEventListener('input', (e) => {
 chset.addEventListener('input', (e) => {
   //console.log(e.target.value)
   //console.log("changed")
-  /**/
   ch = e.target.value;
   if (ch.indexOf("1p") !== -1) {
     c = 13 + parseFloat(ch.split("p")[1])
@@ -361,11 +368,10 @@ var countIt = function () {
       }
       else {
         window.clearInterval(timer);
-        postData('/postquote', {ch:ch,score:time,prompt:prompt,user:JSON.parse(localsave("userdata","get")).name,pw:JSON.parse(localsave("userdata","get")).pass})
-          .then(data => console.log(JSON.stringify(data))) // JSON-string from `response.json()` call
-          .catch(error => console.error(error));
-        console.log({ch:ch,time:time,prompt:prompt,name:JSON.parse(localsave("userdata","get")).name,pw:JSON.parse(localsave("userdata","get")).pass})
+        postData("/postquote",JSON.stringify({ch:ch,score:time,prompt:prompt,user:JSON.parse(localsave("userdata","get")).name,pw:JSON.parse(localsave("userdata","get")).pass}),data => {
+        console.log(JSON.stringify(data))
         location.reload();
+      })
       }
     }
     else {
@@ -374,13 +380,13 @@ var countIt = function () {
         dtimer.textContent = Math.floor(time / 60) + ":" + (time % 60 ? time % 60 : '00');;
       }
       else {
+        console.log(JSON.stringify({ch:ch,score:score,prompt:prompt,name:JSON.parse(localsave("userdata","get")).name,pw:JSON.parse(localsave("userdata","get")).pass}));
         window.clearInterval(timer);
         console.log(JSON.parse(localsave("userdata","get")))
-        postData('/postcomplete', {ch:ch,score:score,prompt:prompt,user:JSON.parse(localsave("userdata","get")).name,pw:JSON.parse(localsave("userdata","get")).pass})
-          .then(data => console.log(JSON.stringify(data))) // JSON-string from `response.json()` call
-          .catch(error => console.error(error));
-        console.log({ch:ch,score:score,prompt:prompt,name:JSON.parse(localsave("userdata","get")).name,pw:JSON.parse(localsave("userdata","get")).pass})
+      postData("/postcomplete",JSON.stringify({ch:ch,score:score,prompt:prompt,user:JSON.parse(localsave("userdata","get")).name,pw:JSON.parse(localsave("userdata","get")).pass}),data => {
+        console.log(JSON.stringify(data))
         location.reload();
+      })
       }
     }
   }

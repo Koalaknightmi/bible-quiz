@@ -150,7 +150,9 @@ table {
 .friend img {
   width: 10px
 }
-
+[class*="kcss-col-"] {
+  overflow-y:auto;     
+}
 @media (min-width: 1024px) {
   #rating-img {
     width: 20px;
