@@ -40,19 +40,33 @@
 
     gtag('config', 'UA-131092423-2');
   </script>
-
   <!-- import the webpage's client-side javascript file 
     <script src="/js/client.js" defer></script>-->
 </head>
 
 <body>
-  <header>
-    <a href="/html/typequizzing.html">type quizzing</a>
-    <a href="/html/scripture-portion.html">scripture portion</a>
-    <a href="/html/index.html">home</a>
-  </header>
+<header id = "nav">
+      <script src="/js/nav.js" defer></script>
+      <div id = "normal-nav">
+        <!--<a href="/html/typequizzing.html">type quizzing</a>
+        <a href="/html/scripture-portion.html">scripture portion</a>
+        <a href="/html/leaderboard.html">leaderboard</a>
+        <a href="/html/voicequizzing.html">voice quizzing</a>-->
+      </div>
+      <div id = "moble-nav">
+        <button style = "width:100%;heigth:100%;" id = "navbtn"><i class="material-icons md-24" style = "color:black;font-size:30px;">menu</i></button>
+        <div id = "sdown-nav">
+          <!--<a class = "d-nav-a" href="/html/typequizzing.html">type quizzing</a>
+          <a class = "d-nav-a" href="/html/scripture-portion.html">scripture portion</a>
+          <a class = "d-nav-a" href="/html/leaderboard.html">leaderboard</a>
+          <a class = "d-nav-a" href="/html/voicequizzing.html">voice quizzing</a>-->
+        </div>
+      </div>
+    </header>
 
   <main class="page" id="leaderboard">
+    <script src="/js/offline.js" defer></script>
+       <div id="status"></div>
     <div id = "leaderboard-wrapper">
       <label for="type">type:</label>
       <select id="type">
@@ -85,7 +99,7 @@
         <option value="2p2">2peter 2</option>
         <option value="2p3">2peter 3</option>
       </select>
-      <input label = "search" class = "kcss-lg kcss-search-input " id = "leaderboard-search" type="search" onkeyup = "searchtable('leaderboard-search','l-table-b',3);"/>
+      <input label = "search" class = "kcss-lg kcss-search-input " id = "leaderboard-search" type="search" onkeyup = "search(this.value);"/>
       <table id = "l-table">
           <thead id = "l-table-h">
           <tr>

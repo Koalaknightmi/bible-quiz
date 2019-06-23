@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 /*all*/
 * {
   box-sizing: border-box;
@@ -131,6 +132,7 @@ header {
   position: absolute;
   top: 0px;
   width: 100%;
+  height:50px;
   box-shadow:0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
 }
 
@@ -140,7 +142,7 @@ header a {
   padding: 10px;
 }
 
-header a:hover {
+#normal-nav a:hover {
   color: rgb(0, 0, 0);
   background: rgb(163, 163, 163);
 }
@@ -158,11 +160,11 @@ body {
   background-attachment: fixed;
   background-size: cover;
   padding: 0px 24px;
-  top: 20px;
+  top: 35px;
   float: left;
   background: rgb(230, 230, 230, .9);
   width: 100%;
-  height: 95vh;
+  height: 88vh;
   /*z-index: 1;*/
   overflow-y: auto;
   text-align: center;
@@ -253,7 +255,7 @@ select {
 
 #state {
   padding: 4px;
-  width:90%;
+  width:10%;
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .14), 0 3px 1px -2px rgba(0, 0, 0, .2), 0 1px 5px 0 rgba(0, 0, 0, .12);
   border: 0;
 }
@@ -284,8 +286,58 @@ button.diffbtn {
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .14), 0 3px 1px -2px rgba(0, 0, 0, .2), 0 1px 5px 0 rgba(0, 0, 0, .12);
 }
 
+/* Rules for icon sizes: */
+.material-icons.md-18 { font-size: 18px; }
+.material-icons.md-24 { font-size: 24px; } /* Default */
+.material-icons.md-36 { font-size: 36px; }
+.material-icons.md-48 { font-size: 48px; }
+#moble-nav{
+  display:block;
+}
+#normal-nav{
+  display:none;
+}
+#sdown-nav{
+  display:none;
+}
+.d-nav-a{
+  position:relative;
+  top:10px;
+  margin:0px;
+  padding:20px;
+  display:block;
+  text-decoration:none;
+  color:black;
+  background:white;
+  transition:all 0.7s cubic-bezier(0.4, 0.0, 0.2, 1);
+  font-family:"Product Sans";
+  border-radius:0px;
+  cursor:pointer;
+  box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12);
+  z-index:40;
+}
 #regpage {
   display: none;
+}
+
+#status {
+  position: fixed;
+  width: 100px;
+  right:20px;
+  top:5px;
+  text-align:center;
+  opacity:0.4;
+  font: bold 1em sans-serif;
+  color: #FFF;
+  padding: 0.5em;
+}
+
+.online {
+  background: green;
+}
+
+.offline {
+  background: red;
 }
 
 * {
@@ -443,6 +495,22 @@ button.kcss-ripple-btn:focus:not(:active)::after {
               }
           }
           @media (min-width: 768px) {
+            #status{
+              width: 100px;
+            }
+            header {
+              height:35px;
+            }
+            .page{
+              top:22px;
+              height:91vh;
+            }
+            #moble-nav{
+              display:none;
+            }
+            #normal-nav{
+              display:block;
+            }
               .kcss-col-1 {
                   width: 8.33%;
               }

@@ -20,7 +20,7 @@ var username = "";
 var frame = 0;
 var frame2 = 1;
 var sub = "";
-var mylocalkey = "koalastrikermi-caedeshostis-";
+var mylocalkey = "koalastrikermi-bbqo-";
 var loggedin = false;
 var log = function(t, deco, type) {
     if (type === "normal" || type === undefined) {
@@ -67,12 +67,12 @@ var log = function(t, deco, type) {
 var localsave = function(vare, gs, t) {
     if (gs === "set") {
         localStorage.setItem(mylocalkey + vare, t);
-        log("localstorage item " + mylocalkey + vare + " is now set to: " + localStorage.getItem(mylocalkey + vare));
+        //log("localstorage item " + mylocalkey + vare + " is now set to: " + localStorage.getItem(mylocalkey + vare));
     } else if (gs === "get") {
-        log("localstorage item " + mylocalkey + vare + " was returned as: " + localStorage.getItem(mylocalkey + vare));
+        //log("localstorage item " + mylocalkey + vare + " was returned as: " + localStorage.getItem(mylocalkey + vare));
         return localStorage.getItem(mylocalkey + vare);
     } else if (gs === "devare") {
-        log(mylocalkey + vare + "  was devared");
+        //log(mylocalkey + vare + "  was devared");
         localStorage.removeItem(mylocalkey + vare);
     }
 };
@@ -485,9 +485,30 @@ if (JSON.parse(getCookie("loggedin")) === true) {
     //mainpg.style.display = "block";
 }
 
-navigator.serviceWorker.addEventListener('message', function(event) {
-    console.log('Received a message from service worker: ', event.data);
+navigator.serviceWorker.addEventListener('message', function(event){
+    console.log("Client 1 Received Message: " + event.data);
+    event.ports[0].postMessage("Client 1 Says 'Hello back!'");
 });
+
+function sendtosw(msg){
+    return new Promise(function(resolve, reject){
+        // Create a Message Channel
+        var msg_chan = new MessageChannel();
+
+        // Handler for recieving message reply from service worker
+        msg_chan.port1.onmessage = function(event){
+            if(event.data.error){
+                reject(event.data.error);
+            }else{
+                resolve(event.data);
+            }
+        };
+
+        // Send message to service worker along with port for reply
+        console.log(navigator.serviceWorker)
+        navigator.serviceWorker.controller.postMessage("Client 1 says '"+msg+"'", [msg_chan.port2]);
+    });
+}
 
 var hidden, visibilityChange; 
 if (typeof document.hidden !== "undefined") { // Opera 12.10 and Firefox 18 and later support 
