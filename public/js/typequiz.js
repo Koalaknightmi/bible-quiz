@@ -229,7 +229,7 @@ sbtn.addEventListener('click', (e) => {
   //console.log(verse)
   prompt = (complete) ? 0 : 3;
   cur = prompt;
-  verse = (quote) ? 13 : random(0, te.length - 1);
+  verse = (quote) ? 0 : random(0, te.length - 1);
   count = (quote) ? 0 : 300;
   time = count;
   dtimer.textContent = Math.floor(time / 60) + ":" + (time % 60 ? time % 60 : '00');
