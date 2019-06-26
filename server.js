@@ -3,6 +3,7 @@ const socketio = require('socket.io');
 const http = require('http');
 const app = express();
 const server = http.Server(app);
+var p2pserver = require('socket.io-p2p-server').Server
 const io = socketio(server); // Attach socket.io to our server
 const email = "NazareneBibleQuizOnline@bible-quiz-online.glitch.me"
 const hbs = require('hbs');
@@ -86,6 +87,9 @@ var Admins = ["koalastrikermi", ];
 var User;
 var typequizzingscores;
 var subs;
+var go_p2p = function(socket,room){
+  p2pserver(socket, null, room)
+}
 var push = (opt, to) => {
   if (to === "") {
     subs.findAll().then(users => {
