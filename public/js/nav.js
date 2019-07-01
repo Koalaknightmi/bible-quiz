@@ -8,6 +8,8 @@ var htmls = [
   {path:"scripture-portion",name:"scripture portion"},
   {path:"typequizzing",name:"type quizzing"},
   {path:"voicequizzing",name:"voice quizzing"},
+  {path:"tournament",name:"online tournaments"},
+  {path:"search",name:"search"},
 ]
 var navopen = false;
 
@@ -69,6 +71,6 @@ function toggleFullScreen() {
 }
 document.addEventListener("keypress", function(e) {
   if (e.keyCode === 13) {
-    toggleFullScreen();
+    //toggleFullScreen();
   }
 }, false);

@@ -39,8 +39,8 @@
       gtag('config', 'UA-131092423-2');
     </script>
     
-    <!-- import the webpage's client-side javascript file 
-      <script src="/js/client.js" defer></script>-->
+    <!-- import the webpage's client-side javascript file -->
+      <script src="/js/search.js" defer></script>
   </head>
   <body>
     <header id = "nav">
@@ -64,6 +64,12 @@
     <main class = "page" id="home">
       <script src="/js/offline.js" defer></script>
        <div id="status"></div>
+      <div>
+        <input label = "search" class = "kcss-lg kcss-search-input " id = "leaderboard-search" type="search" onkeyup = "search(this.value);"/>
+        <div id = "results">
+          
+        </div>
+      </div>
     </main>
     <footer class="kcss-main-footer"><span class="kcss-copyright"><a href="https://repl.it/@Koalaknightmi" target="_blank">Copyright &copy; 2018 Koalastrikermi/koalaknightmi</a></span></footer>
   </body>

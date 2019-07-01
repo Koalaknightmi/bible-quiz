@@ -451,11 +451,11 @@ bbtn.addEventListener("click", function(e) {
     page1();
 });
 
-log(localsave("save-checked", "get"));
+console.log(localsave("save-checked", "get"));
 
 if (JSON.parse(localsave("save-checked", "get")) === true) {
-    log("using saved data", "background:green;");
-    log(JSON.parse(localsave("userdata", "get")));
+    console.log("%s using saved data", "background:green;");
+    console.log(JSON.parse(localsave("userdata", "get")));
     login.style.display = "none";
     socket.emit("login attempt", {
         user: JSON.parse(localsave("userdata", "get")).name,
@@ -464,8 +464,8 @@ if (JSON.parse(localsave("save-checked", "get")) === true) {
   username = JSON.parse(localsave("userdata", "get")).name;
 }
 if (JSON.parse(getCookie("loggedin")) === true) {
-    log("using saved data", "background:green;");
-    log(JSON.parse(localsave("userdata", "get")));
+    console.log("using saved data", "background:green;");
+    console.log(JSON.parse(localsave("userdata", "get")));
     username = JSON.parse(localsave("userdata", "get")).name;
     socket.emit("login attempt", {
         user: JSON.parse(localsave("userdata", "get")).name,
