@@ -1,3 +1,4 @@
+var reqs = 0;
 const express = require('express');
 const socketio = require('socket.io');
 const http = require('http');
@@ -13,6 +14,7 @@ var serveIndex = require('serve-index');
 var serveStatic = require('serve-static')
 var fs = require('fs');
 const frameguard = require('frameguard')
+const f = require("./functions");
 /*app.use(frameguard({
   action: 'SAMEORIGIN'
 }))*/
@@ -20,7 +22,6 @@ app.use(express.json()) // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 app.use('/files', serveIndex('/', {'icons': true}));
 app.use('/files', serveStatic('/'));
-
 app.post("/test",(req,res)=>{
   console.log(req.body)// so when you run 
   /*
@@ -59,6 +60,7 @@ var ip = "";
 var log = console.log;
 var chat = [];
 var onlinepls = {};
+var gamerooms = {};
 const sendmail = require('sendmail')({
   logger: {
     debug: console.log,
@@ -90,128 +92,19 @@ var subs;
 var go_p2p = function(socket,room){
   p2pserver(socket, null, room)
 }
-var push = (opt, to) => {
-  if (to === "") {
-    subs.findAll().then(users => {
-      for (var i in users) {
-        console.log(users[i].dataValues.sub);
-        return webPush.sendNotification(users[i].dataValues.sub, opt).catch((err) => {
-          if (err.statusCode === 410) {
-            //console.log(err)
-          }
-          else {
-            //console.log('Subscription is no longer valid: ', err);
-            subs.destroy({
-              where: {
-                sub: users[i].dataValues.sub
-              }
-            });
-          }
-        });
-      }
-    });
-  }
-  else {
-    subs.findAll({
-      where: {
-        userName: to
-      }
-    }).then(users => {
-      for (var i in users) {
-        return webPush.sendNotification(users[i].dataValues.sub, opt).catch((err) => {
-          if (err.statusCode === 410) {
-            //console.log(err)
-          }
-          else {
-            //console.log('Subscription is no longer valid: ', err);
-            subs.destroy({
-              where: {
-                sub: users[i].dataValues.sub
-              }
-            });
-          }
-        });
-      }
-    });
-  }
-}
-var timeSince = function (date) {
-  if (typeof date !== 'object') {
-    date = new Date(date);
-  }
-  var seconds = Math.floor((new Date() - date) / 1000);
-  var intervalType;
-  var interval = Math.floor(seconds / 31536000);
-  if (interval >= 1) {
-    intervalType = 'year';
-  }
-  else {
-    interval = Math.floor(seconds / 2592000);
-    if (interval >= 1) {
-      intervalType = 'month';
-    }
-    else {
-      interval = Math.floor(seconds / 86400);
-      if (interval >= 1) {
-        intervalType = 'day';
-      }
-      else {
-        interval = Math.floor(seconds / 3600);
-        if (interval >= 1) {
-          intervalType = "hour";
-        }
-        else {
-          interval = Math.floor(seconds / 60);
-          if (interval >= 1) {
-            intervalType = "minute";
-          }
-          else {
-            interval = seconds;
-            intervalType = "second";
-          }
-        }
-      }
-    }
-  }
-  if (interval > 1 || interval === 0) {
-    intervalType += 's';
-  }
-  return interval + ' ' + intervalType + " ago";
-};
+var push = f.push;
+var timeSince = f.timeSince;
+var totime = f.totime;
+var asort = f.asort;
 //made by porter on khan academy https://www.Khanacademy.org/profile/battleboy21
-String.prototype.pad = function (l, s) {
-  return (l -= this.length) > 0 ? (s = new Array(Math.ceil(l / s.length) + 1).join(s)).substr(0, s.length) + this + s.substr(0, l - s.length) : this;
-};
+String.prototype.pad = f.pad;
 
-function totime(time) {
-  return Math.floor(time / 60) + ":" + (time % 60).toFixed().pad(2, "0")
-}
 /*hbs.registerHelper('filter', function (context, options) {
   var a = context.sort(function (a, b) {
     return b.score - a.score;
   });
   return options.fn(this) + "<td>" + a[0].score + "</td>"
 });*/
-var asort = (a,t,s) => {
-  //console.log(a)
-  let ha = [];
-  let ha2 = {};
-  for(var i = 0;i<a.length;i++){
-    if(ha.indexOf(a[i].ch)===-1){
-      ha.push(a[i].ch);
-      ha2[a[i].ch] = a[i]
-      //console.log(a[i].ch);
-    }
-    else if(t==="hl"&&a[i].score>ha2[a[i].ch].score){
-      ha2[a[i].ch] = a[i]
-    }
-    else if(a[i].score<ha2[a[i].ch].score){
-      ha2[a[i].ch] = a[i]
-    }
-  }
-//console.log(ha2)
-return ha2;
-} 
 
 function Player(id, username, col, r) {
   this.user = username;
@@ -371,15 +264,10 @@ function setup() {
 hbs.registerPartials(__dirname + '/veiws/partials');
 app.set('view engine', 'hbs');
 app.set('views', __dirname + '/veiws/');
-/*app.use((req, resp, next) => {
-  const now = new Date();
-  const time = `${now.toLocaleDateString()} - ${now.toLocaleTimeString()}`;
-  const path = `"${req.method} ${req.path}"`;
-  const m = `${req.ip} - ${time} - ${path}`;
-  // eslint-disable-next-line no-console
-  //console.log(m);
-  next();
-});*/
+app.use((req, resp, next) => {
+  reqs ++;
+  console.log(reqs)
+});
 app.use(express.static('public'));
 
 app.get('/', function (request, response) {
@@ -662,18 +550,6 @@ app.get('/user/:user', function (request, res) {
   })
 });
 io.sockets.on('connection', function (socket) {
-  typequizzingscores.findAll().then(scores => {
-    for (var i in scores) {
-      //console.log(scores[i].dataValues);
-    }
-  })
-  console.log('socket Connection has been established successfully.');
-  User.findAll().then(users => {
-    for (var i in users) {
-      //console.log(users[0].dataValues);
-    }
-    //console.log(users); 
-  });
   /*socket.on('message', function (data) {
     User.findOne({
       where: {
@@ -837,7 +713,7 @@ io.sockets.on('connection', function (socket) {
           userName: data.name,
           sub: data.sub
         })
-        push(payload, data.user)
+        push(payload, data.user,subs,webPush)
         //console.log("logged in:"+users.password+" = "+data.pass);
         var id = socket.id;
         var newplayer = {

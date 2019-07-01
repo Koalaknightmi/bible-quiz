@@ -15,6 +15,11 @@ String.prototype.pad = function(l, s){
 function totime(time) {
     return Math.floor(time / 60) + ":" + (time % 60).toFixed().pad(2, "0")
 }
+function fromtime(time){
+  time = time.split(":")
+  time[0] = Number(time[0])*60;
+  return (time[0]+Number(time[1]))
+}
 var filllb = function(a,ch){
   console.log(a,ch)
   var cha = []
@@ -91,9 +96,7 @@ fetch('/leaderboardfetch')
     } else if( data[i].type === "quoted-true"){
       data[i].score = totime(data[i].score)
       qp.push(data[i]);
-    }
-  }
-  if(data[i].type === "completed-true-v"){
+    }else if(data[i].type === "completed-true-v"){
       cpv.push(data[i]);
     } 
   else if( data[i].type === "completed-false-v"){
@@ -107,17 +110,31 @@ fetch('/leaderboardfetch')
       data[i].score = totime(data[i].score)
       qpv.push(data[i]);
     }
+  }
+  
     q.sort(function (a, b) {
-      return a.score - b.score;
+      return fromtime(a.score) - fromtime(b.score);
     });
     qp.sort(function (a, b) {
-      return a.score - b.score;
+      return fromtime(a.score) - fromtime(b.score);
     });
     c.sort(function (a, b) {
       return b.score - a.score;
     });
     cp.sort(function (a, b) {
       return b.score - a.score ;
+    });
+    qv.sort(function (a, b) {
+      return fromtime(a.score) - fromtime(b.score);
+    });
+    qpv.sort(function (a, b) {
+      return fromtime(a.score) - fromtime(b.score);
+    });
+    cv.sort(function (a, b) {
+      return b.score - a.score;
+    });
+    cpv.sort(function (a, b) {
+      return b.score - a.score;
     });
     if(type === "q"){
       filllb(q,ch)
@@ -131,18 +148,6 @@ fetch('/leaderboardfetch')
     else if(type === "cp"){
       filllb(cp,ch)
     }
-    qv.sort(function (a, b) {
-      return a.score - b.score;
-    });
-    qpv.sort(function (a, b) {
-      return a.score - b.score;
-    });
-    cv.sort(function (a, b) {
-      return b.score - a.score;
-    });
-    cpv.sort(function (a, b) {
-      return b.score - a.score ;
-    });
     if(type === "qv"){
       filllb(qv,ch)
     }

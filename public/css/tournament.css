@@ -1,0 +1,74 @@
+#g-i-plrs td{
+    padding: 0px 15px 0px 15px;
+}
+#g-i-plrs table{
+    width:100%;
+    border:none;
+}
+#g-i-plrs tr{
+  text-align:center;
+  /*border-bottom: 2px solid rgb(255, 255, 255);*/
+}
+#g-i-plrs{
+  padding:0px;
+  overflow-y:auto;
+  border:none;
+}
+#g-i-plrs tbody tr:nth-child(even) {
+    background: #bdbdbd;
+}
+#g-i-plrs tbody tr:nth-child(odd) {
+    background: #e0e0e0;
+}
+#g-i-plrs tbody tr:nth-child(1) {
+    background: #ffea00;
+}
+#g-i-plrs tbody tr:nth-child(2) {
+    background: #cfd8dc;
+}
+#g-i-plrs tbody tr:nth-child(3) {
+    background: #a1887f;
+}
+#g-i-table-h {
+    background: white;
+    color: rgb(80, 80, 80);
+    width: 100vw;
+    border:none;
+}
+th{
+    border: solid 1px black;
+    padding: 5px 12px;
+}
+#games td{
+    padding: 0px 15px 0px 15px;
+    border:solid 1px black;
+}
+#games table{
+    width:100%;
+    border:none;
+}
+#games tr{
+    text-align:center;
+    /*border-bottom: 2px solid rgb(255, 255, 255);*/
+}
+#games{
+  padding:2px;
+  overflow-y:auto;
+  border:none;
+}
+#games tbody tr:nth-child(even) {
+    background: #bdbdbd;
+}
+#games tbody tr:nth-child(odd) {
+    background: #e0e0e0;
+}
+#games tbody tr:hover {
+    background: #9e9e9e;
+    cursor: pointer!important;
+}
+#g-table-h {
+    background: white;
+    color: rgb(80, 80, 80);
+    width: 100vw;
+    border:none;
+}
