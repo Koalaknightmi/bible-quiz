@@ -138,7 +138,7 @@ self.addEventListener('push', function (event) {
     badge: "https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2Fimage%20(4).png?v=1560030827542",
     vibrate: [100, 100, 100, 200, 300, 100, 100, 100],
     sound: "https://cdn.glitch.com/cfc340a0-db08-47ab-ae0f-2f9aacd8294c%2Fnotif.mp3",
-    actions: [
+    /*actions: [
       {
         action: 'coffee-action',
         title: 'Coffee',
@@ -149,7 +149,7 @@ self.addEventListener('push', function (event) {
         title: 'Doughnut',
         icon: 'https://cdn.glitch.com/project-avatar/cfc340a0-db08-47ab-ae0f-2f9aacd8294c.png?1559424076873'
        }
-     ],
+     ],*/
     tag: 'biblenotif'
   };
   event.waitUntil(self.registration.showNotification('bible quizzing', options));

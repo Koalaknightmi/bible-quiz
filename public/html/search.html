@@ -21,6 +21,7 @@
     <!--  <link rel="preload" href="/gethebrews" as="text">
       import the webpage's stylesheet -->
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/search.css">
     <script>
       if (location.protocol !== "https:") {
         location.protocol = "https:"
@@ -65,7 +66,8 @@
       <script src="/js/offline.js" defer></script>
        <div id="status"></div>
       <div>
-        <input label = "search" class = "kcss-lg kcss-search-input " id = "leaderboard-search" type="search" onkeyup = "search(this.value);"/>
+        <input label = "search" class = "kcss-lg kcss-search-input " id = "search" type="search" onkeyup = "search(this.value);"/>
+        <div id = "results-num"></div>
         <div id = "results">
           
         </div>
