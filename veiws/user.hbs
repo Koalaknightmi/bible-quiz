@@ -105,15 +105,15 @@
                   </thead>
                   <tbody>
                     {{#each ts}}
-                    {{#each this}}
-                      <tr>
-                        <td>{{this.id}}</td>
-                        <td>{{this.ch}}</td>
-                        <td>{{this.score}}</td>
-                        <td>{{this.createdAt}}</td>
-                        <td>{{this.type}}</td>
-                    </tr>
-                    {{/each}}
+                      {{#each this}}
+                        <tr>
+                          <td>{{this.id}}</td>
+                          <td>{{this.ch}}</td>
+                          <td>{{this.score}}</td>
+                          <td>{{this.createdAt}}</td>
+                          <td>{{this.type}}</td>
+                        </tr>
+                      {{/each}}
                     {{/each}}
                   </tbody>
               </table>

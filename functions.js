@@ -67,48 +67,43 @@ return ha2;
 exports.pad = function (l, s) {
   return (l -= this.length) > 0 ? (s = new Array(Math.ceil(l / s.length) + 1).join(s)).substr(0, s.length) + this + s.substr(0, l - s.length) : this;
 };
-exports.push = (opt,to,subs,webPush) => {
+exports.push = (opt,to,ref,webPush) => {
   if (to === "") {
-    subs.findAll().then(users => {
-      for (var i in users) {
-        console.log(users[i].dataValues.sub);
-        return webPush.sendNotification(users[i].dataValues.sub, opt).catch((err) => {
+    let query = ref.get()
+  .then(subs => { 
+    subs.forEach(sub => {
+      console.log(sub.data().sub);
+        return webPush.sendNotification(sub.data().sub, opt).catch((err) => {
           if (err.statusCode === 410) {
             //console.log(err)
           }
           else {
             //console.log('Subscription is no longer valid: ', err);
-            subs.destroy({
-              where: {
-                sub: users[i].dataValues.sub
-              }
-            });
+            ref.doc(sub.id).delete();
           }
         });
-      }
+      });
     });
   }
   else {
-    subs.findAll({
-      where: {
-        userName: to
-      }
-    }).then(users => {
-      for (var i in users) {
-        return webPush.sendNotification(users[i].dataValues.sub, opt).catch((err) => {
+    let query = ref.where("userName","==",to).get()
+    .then(subs => { 
+      if (subs.empty) {
+        console.log('No matching documents.');
+        return;
+      }  
+      subs.forEach(sub => {
+      console.log(sub.data().sub);
+        return webPush.sendNotification(sub.data().sub, opt).catch((err) => {
           if (err.statusCode === 410) {
             //console.log(err)
           }
           else {
             //console.log('Subscription is no longer valid: ', err);
-            subs.destroy({
-              where: {
-                sub: users[i].dataValues.sub
-              }
-            });
+            ref.doc(sub.id).delete();
           }
         });
-      }
+      });
     });
   }
 }

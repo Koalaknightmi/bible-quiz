@@ -19,6 +19,7 @@ const f = require("./functions");
 /*app.use(frameguard({
   action: 'SAMEORIGIN'
 }))*/
+
 app.use(express.json()) // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 app.use('/files', serveIndex('/', {'icons': true}));
@@ -71,11 +72,13 @@ admin.initializeApp({
   databaseURL: "https://bible-quiz-e1ef4.firebaseio.com"
 });
 var db = admin.firestore();
+var usersref = db.collection("users");
+var subsref = db.collection("users");
 let FieldValue = admin.firestore.FieldValue;
 var usertimouts = {}
 var payload = "hi there";
-var Sequelize = require('sequelize');
-const Op = Sequelize.Op;
+//var Sequelize = require('sequelize');
+//const Op = Sequelize.Op;
 var ip = "";
 var log = console.log;
 var chat = [];
@@ -89,8 +92,6 @@ const sendmail = require('sendmail')({
     error: console.error
   },
   silent: false
-  /*,                                  
-    devHost: 'https://star-feels.glitch.me/', */ // Default: localhost
 });
 var newD = function(c,n,data){
   let docRef = db.collection(c).doc(n);
@@ -98,52 +99,23 @@ var newD = function(c,n,data){
   data.updatedAt = FieldValue.serverTimestamp();
   docRef.set(data);
 }
-/*var sequelize = new Sequelize('database', process.env.DB_USER, process.env.DB_PASS, {
-  host: process.env.DB_HOST,
-  dialect: 'sqlite',
-  pool: {
-    max: 5,
-    min: 0,
-    idle: 10000
-  },
-  storage: '.data/database.sqlite',
-  logging: false
-});*/
+var newD2 = function(c,data,t){
+  let addDoc = db.collection(c).add(data).then(ref => {
+    if(t){
+      t(ref)
+    }
+  });
+}
+var updateOne = function(c,n,data){
+  let dRef = db.collection(c).doc(n);
+  data.updatedAt = FieldValue.serverTimestamp();
+  dRef.update(data);
+}
+
 var onlineplayers = {};
 var Admins = ["koalastrikermi", ];
 //var chatrooms = {};
 var User;
-/*db.collection("users").get()
-    .then((snapshot) => {
-      let data = {};
-      snapshot.forEach((doc) => {        
-        data[doc.id] = doc.data()
-      });
-      User = data;
-    })
-    .catch((err) => {
-    });
-newD("users","koalastrikermi",{
-  id: 1,
-  userName: 'koalastrikermi',
-  email: 'koalastrikermi@gmail.com',
-  password: 'WWNWeXZ3SWs3S2hsdlA5bw==',
-  lastLogin: FieldValue.serverTimestamp(),
-  isAdmin: true,
-  visitNum: 1960,
-  nameCOl: 'blue',
-  rankNum: 0,
-  gamesPlayed: 0,
-  online: true,
-  tournaments: '',
-  friends: '["koalastrikermi2","asd","Jaidenmcd@icloud.com"]',
-  monthScore: 0,
-  allTimeScore: 0,
-  profileIMG: 'https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859',
-  state: 'va',
-  ipAD: '',
-  banned: false
-});*/
 var typequizzingscores;
 var subs;
 var go_p2p = function(socket,room){
@@ -213,30 +185,34 @@ app.get('/leaderboardfetch', function (request, res) {
       });
       res.write(JSON.stringify(data));
       res.end();
-      })
+    })
 });
 
 app.post("/postquote",(req,res) => {
   var data = req.body;
-  console.log(data)
-    User.findOne({
-      where: {
-        userName: data.user
+  let match = false;
+  let query = usersref.where("userName","==",data.user).get()
+  .then(users => { 
+    if (users.empty) {
+      console.log('No matching documents.');
+      socket.emit("login failed");
+      return;
+    }  
+    users.forEach(user => {
+      console.log(user.data().userName)
+      if (user.data().password === data.pass) {
+        match = true;
       }
-    }).then(user => {
-      if (user === null) {
-        console.log("verification failed");
-        //console.log("login failed " + data.user + " is not regestered");
+    });
+  });
+    if(match){
+      if (data.prompt === 0) {
+        prompt = false;
       }
-      else if (user.dataValues.password === data.pw) {
-    if (data.prompt === 0) {
-      prompt = false;
-    }
-    else {
-      prompt = true;
-    }
-    
-      typequizzingscores.create({
+      else {
+        prompt = true;
+      }
+      newD2("typequizzingscores",{
         ch: data.ch,
         userName: data.user,
         score: data.score,
@@ -244,79 +220,37 @@ app.post("/postquote",(req,res) => {
         profileIMG: user.dataValues.profileIMG,
         nameCOl: user.dataValues.nameCOl
       });
-    res.writeHead(200, {
-      'Content-Type': 'application/json'
-    });
-    
-    res.end();
-      }
-      else {
-        console.log("verification failed");
-      }  
-    })
-  
-})
-app.post("/postcomplete",(req,res) => {
-  var data = req.body;
-  console.log(data)
-    User.findOne({
-      where: {
-        userName: data.user
-      }
-    }).then(user => {
-      if (user === null) {
-        console.log("verification failed");
-        //console.log("login failed " + data.user + " is not regestered");
-      }
-      else if (user.dataValues.password === data.pw) {
-    if (data.prompt === 0) {
-      prompt = false;
     }
-    else {
-      prompt = true;
-    }
-    
-      typequizzingscores.create({
-        ch: data.ch,
-        userName: data.user,
-        score: data.score,
-        type: "completed-" + prompt,
-        profileIMG: user.dataValues.profileIMG,
-        nameCOL: user.dataValues.nameCOl
-      });
-    res.writeHead(200, {
-      'Content-Type': 'application/json'
-    });
-    
-    res.end();
-      }
-      else {
-        console.log("verification failed");
-      }  
-    })
-  
+  res.writeHead(200, {
+    'Content-Type': 'application/json'
+  });
+  res.end();
 })
 app.post("/vpostquote",(req,res) => {
   var data = req.body;
-  console.log(data)
-    User.findOne({
-      where: {
-        userName: data.user
+  let match = false;
+  let query = usersref.where("userName","==",data.user).get()
+  .then(users => { 
+    if (users.empty) {
+      console.log('No matching documents.');
+      socket.emit("login failed");
+      return;
+    }  
+    users.forEach(user => {
+      console.log(user.data().userName)
+      if (user.data().password === data.pass) {
+        match = true;
       }
-    }).then(user => {
-      if (user === null) {
-        console.log("verification failed");
-        //console.log("login failed " + data.user + " is not regestered");
+    });
+  });
+    if(match){
+      if (data.prompt === 0) {
+        prompt = false;
       }
-      else if (user.dataValues.password === data.pw) {
-    if (data.prompt === 0) {
-      prompt = false;
-    }
-    else {
-      prompt = true;
-    }
-    
-      typequizzingscores.create({
+      else {
+        prompt = true;
+      }
+      newD2("typequizzingscores",{
         ch: data.ch,
         userName: data.user,
         score: data.score,
@@ -324,152 +258,177 @@ app.post("/vpostquote",(req,res) => {
         profileIMG: user.dataValues.profileIMG,
         nameCOl: user.dataValues.nameCOl
       });
-    res.writeHead(200, {
-      'Content-Type': 'application/json'
+    }
+  res.writeHead(200, {
+    'Content-Type': 'application/json'
+  });
+  res.end();
+})
+app.post("/postcomplete",(req,res) => {
+  var data = req.body;
+  let match = false;
+  let query = usersref.where("userName","==",data.user).get()
+  .then(users => { 
+    if (users.empty) {
+      console.log('No matching documents.');
+      socket.emit("login failed");
+      return;
+    }  
+    users.forEach(user => {
+      console.log(user.data().userName)
+      if (user.data().password === data.pass) {
+        match = true;
+      }
     });
-    
-    res.end();
+  });
+    if(match){
+      if (data.prompt === 0) {
+        prompt = false;
       }
       else {
-        console.log("verification failed");
-      }  
-    })
-  
+        prompt = true;
+      }
+      newD2("typequizzingscores",{
+        ch: data.ch,
+        userName: data.user,
+        score: data.score,
+        type: "completed-" + prompt,
+        profileIMG: user.dataValues.profileIMG,
+        nameCOl: user.dataValues.nameCOl
+      });
+    }
+  res.writeHead(200, {
+    'Content-Type': 'application/json'
+  });
+  res.end();
 })
 app.post("/vpostcomplete",(req,res) => {
   var data = req.body;
-  console.log(data)
-    User.findOne({
-      where: {
-        userName: data.user
+  let match = false;
+  let query = usersref.where("userName","==",data.user).get()
+  .then(users => { 
+    if (users.empty) {
+      console.log('No matching documents.');
+      socket.emit("login failed");
+      return;
+    }  
+    users.forEach(user => {
+      console.log(user.data().userName)
+      if (user.data().password === data.pass) {
+        match = true;
       }
-    }).then(user => {
-      if (user === null) {
-        console.log("verification failed");
-        //console.log("login failed " + data.user + " is not regestered");
-      }
-      else if (user.dataValues.password === data.pw) {
+    });
+  });
+  if(match){
     if (data.prompt === 0) {
       prompt = false;
     }
     else {
       prompt = true;
     }
-    
-      typequizzingscores.create({
-        ch: data.ch,
-        userName: data.user,
-        score: data.score,
-        type: "completed-" + prompt+"-v",
-        profileIMG: user.dataValues.profileIMG,
-        nameCOL: user.dataValues.nameCOl
-      });
-    res.writeHead(200, {
-      'Content-Type': 'application/json'
+    newD2("typequizzingscores",{
+      ch: data.ch,
+      userName: data.user,
+      score: data.score,
+      type: "completed-" + prompt+"-v",
+      profileIMG: user.dataValues.profileIMG,
+      nameCOl: user.dataValues.nameCOl
     });
-    
-    res.end();
-      }
-      else {
-        console.log("verification failed");
-      }  
-    })
-  
+  }
+  res.writeHead(200, {
+    'Content-Type': 'application/json'
+  });
+  res.end();
 })
 
-/*app.get('/user/:user', function (request, res) {
+app.get('/user/:user', function (request, res) {
   //console.log(request.params.user)
+  let userdata;
+  //let typequizzingscores;
+  let friendsdata = [];
   var username = request.params.user;
-  User.findOne({
-    where: {
-      userName: username
+  let userquery = usersref.where("userName","==",data.user).get()
+  .then(users => { 
+    if (users.empty) {
+      console.log('No matching documents.');
+      socket.emit("login failed");
+      return;
+    }  
+    users.forEach(user => {
+      useruser.data().email = "";
+      useruser.data().lastLogin = timeSince(useruser.data().lastLogin)
+      useruser.data().state = useruser.data().state.toUpperCase();
+      userdata = user.data();
+    });
+  });
+  if(userdata.friends){
+    for(var i = 0;i<userdata.friends.length;i++){
+      let friendquery = usersref.where("userName","==",data.user).get()
+      .then(users => { 
+        if (users.empty) {
+          console.log('No matching documents.');
+          socket.emit("login failed");
+          return;
+        }  
+        users.forEach(user => {
+          friendsdata.push(user.data())
+        });
+      });
     }
-  }).then(user => {
-    typequizzingscores.findAll({
-      where: {
-        userName: username
-      }
-    }).then(scores => {
-      var ts = {};
-      var sc = [];
-      var cts = [];
-      var qts = [];
-      var cpts = [];
-      var qpts = [];
-      for (var i = 0; i < scores.length; i++) {
-        scores[i].dataValues.createdAt = timeSince(scores[i].dataValues.createdAt)
-        if (scores[i].type.indexOf("quote") !== -1) {
-          scores[i].dataValues.score = totime(scores[i].dataValues.score);
+  }
+  var ts = {};
+  var sc = [];
+  var cts = [];
+  var qts = [];
+  var cpts = [];
+  var qpts = [];
+  let tscoresquery = usersref.where("userName","==",data.user).get()
+    .then(scores => { 
+      if (scores.empty) {
+        console.log('No matching documents.');
+        socket.emit("login failed");
+        return;
+      }  
+      scores.forEach(score => {
+        score.data().createdAt = timeSince(score.data().createdAt)
+        if (score.data().type.indexOf("quote") !== -1) {
+          score.data().score = totime(score.data().score);
         }
-        if (scores[i].type === "quoted-true") {
-          scores[i].type = "quoted with prompt"
+        if (score.data().type === "quoted-true") {
+          score.data().type = "quoted with prompt"
           qpts.push(scores[i].dataValues)
         }
-        else if (scores[i].type === "quoted-false") {
-          scores[i].type = "quoted without prompt"
-          qts.push(scores[i].dataValues)
+        else if (score.data().type === "quoted-false") {
+          score.data().type = "quoted without prompt"
+          qts.push(score.data())
         }
         else if (scores[i].type === "completed-false") {
-          scores[i].type = "completed without prompt"
-          cts.push(scores[i].dataValues)
+          score.data().type = "completed without prompt"
+          cts.push(score.data())
         }
         else {
-          scores[i].type = "completed with prompt"
-          cpts.push(scores[i].dataValues)
+          score.data().type = "completed with prompt"
+          cpts.push(scores.data())
         } 
-        sc.push(scores[i].dataValues)
+        sc.push(scores.data())
         //console.log()
-      }
-      //cts = asort(cts,"hl","score")
-      cpts = asort(cpts,"hl","score")
-      /*qpts = asort(qpts,"h","score")
-      qts = asort(qts,"h","score")*/
-      /*
-      ts = {c:cts,cp:cpts,q:qts,qp:qpts};
-      //console.log(ts)
-      //console.log(sc)
-      user.dataValues.email = "";
-      user.dataValues.lastLogin = timeSince(user.dataValues.lastLogin)
-      user.dataValues.state = user.dataValues.state.toUpperCase();
-      if (user.dataValues.friends) {
-        sequelize.query('SELECT * FROM users WHERE userName IN(:status) ', {
-          replacements: {
-            status: JSON.parse(user.dataValues.friends)
-          },
-          type: sequelize.QueryTypes.SELECT
-        }).then(users => {
-          for (var i = 0; i < users.length; i++) {
-            users[i].state = users[i].state.toUpperCase();
-          }
-          /*console.log({
-            userdata: user.dataValues,
-            scoresdata: sc,
-            friendsdata: users
-          })*//*
-          res.render('user', {
-            userdata: user.dataValues,
-            scoresdata: sc,
-            friendsdata: users,
-            ts:ts
-          });
-        })
-      }
-      else {
-        /*console.log({
-              userdata: user.dataValues,
-              scoresdata: sc,
-              friendsdata: ""
-            })*//*
-        res.render('user', {
-          userdata: user.dataValues,
-          scoresdata: sc,
-          friendsdata: "",
-          ts:ts
-        });
-      }
-    })
-  })
-});*/
+        friendsdata.push(score.data())
+      });
+    });  
+    cts = asort(cts,"hl","score")
+    cpts = asort(cpts,"hl","score")
+    qpts = asort(qpts,"h","score")
+    qts = asort(qts,"h","score")
+    ts = {c:cts,cp:cpts,q:qts,qp:qpts};
+    res.render('user', {
+      userdata: userdata,
+      scoresdata: typequizzingscores,
+      friendsdata: friendsdata,
+      ts:ts
+    });
+});
+
+
 io.sockets.on('connection', function (socket) {
   /*socket.on('message', function (data) {
     User.findOne({
@@ -488,15 +447,19 @@ io.sockets.on('connection', function (socket) {
     socket.emit("vpk", process.env.VAPID_PUBLIC_KEY)
   }); // listen to the event
   socket.on("register", function (data, sub) {
-    //console.log(sub)
-    User.findOne({
-      where: {
-        userName: data.name
+    console.log(sub)
+    let used = false;
+  let query = usersref.get()
+  .then(users => { 
+    users.forEach(user => {
+      console.log(user)
+      if (user.id === data.name) {
+        used = true;
       }
-    }).then(user => {
-      if (user === null) {
+    });
+      if(!used){
         if (Admins.indexOf(data.name) > -1) {
-          newD("users","koalastrikermi",{
+          newD("users",data.name,{
             id: 1,
             userName: data.name,
             email: data.email,
@@ -514,37 +477,16 @@ io.sockets.on('connection', function (socket) {
             allTimeScore: 0,
             profileIMG: 'https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859',
             state: data.state,
-            ipAD: '',
+            ipAD: ip,
             banned: false
           });
-          User.create({
-            userName: data.name,
-            email: data.email,
-            password: data.pass,
-            lastLogin: new Date(),
-            isAdmin: true,
-            visitNum: 1,
-            nameCOl: "blue",
-            rankNum: 0,
-            gamesPlayed: 0,
-            online: true,
-            inventory: "",
-            money: 100,
-            friends: "",
-            monthScore: 0,
-            allTimeScore: 0,
-            profileIMG: "https://cdn.glitch.com/20e968ff-97d4-4430-83ad-42189e4f368d%2Favatar_generic.png?1545099848845",
-            ipAD: ip,
-            banned: false,
-            state: data.state
-          });
-          subs.create({
+          newD2("subs",{
             userName: data.name,
             sub: sub
           })
           //console.log('user ' + data.name + ' registered');
           socket.emit('registered', data.name);
-          var id = socket.id;
+          //var id = socket.id;
           sendmail({
             from: email,
             to: data.email,
@@ -554,34 +496,34 @@ io.sockets.on('connection', function (socket) {
             console.log(err && err.stack);
             console.dir(reply);
           });
-          User.findAll().then(users => {
+          /*db.collection("users").get().then(users => {
             io.emit("leaderboard", users);
             //console.log(users);
-          })
+          })*/
         }
         else {
-          User.create({
+          newD("users",data.name,{
+            id: 1,
             userName: data.name,
             email: data.email,
             password: data.pass,
-            lastLogin: new Date(),
+            lastLogin: FieldValue.serverTimestamp(),
             isAdmin: false,
-            visitNum: 1,
-            nameCOl: "blue",
+            visitNum: 0,
+            nameCOl: 'blue',
             rankNum: 0,
             gamesPlayed: 0,
             online: true,
-            inventory: "",
-            money: 100,
-            friends: "",
+            tournaments: '',
+            friends: [],
             monthScore: 0,
             allTimeScore: 0,
-            profileIMG: "https://cdn.glitch.com/20e968ff-97d4-4430-83ad-42189e4f368d%2Favatar_generic.png?1545099848845",
+            profileIMG: 'https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859',
+            state: data.state,
             ipAD: ip,
-            banned: false,
-            state: data.state
+            banned: false
           });
-          subs.create({
+          newD2("subs",{
             userName: data.name,
             sub: sub
           })
@@ -597,7 +539,7 @@ io.sockets.on('connection', function (socket) {
             console.log(err && err.stack);
             console.dir(reply);
           });
-          var id = socket.id;
+          /*var id = socket.id;
           var newplayer = {
             id: id,
             user: data.user
@@ -605,32 +547,62 @@ io.sockets.on('connection', function (socket) {
           onlineplayers[id] = newplayer;
           onlinepls[socket.id] = {
             user: data.user
-          };
-          chat.unshift({
+          };*/
+          /*chat.unshift({
             col: "black",
             user: 'bot',
             message: data.user + ' is online now',
             timesince: new Date().toISOString()
-          });
-          io.emit("message", chat);
-          User.findAll().then(users => {
+          });*/
+          //io.emit("message", chat);
+          /*db.collection("users").get().then(users => {
             io.emit("leaderboard", users);
             //console.log(users);
-          })
+          })*/
         }
-        /*User.findAll().then(users => {
-            console.log(users);
-        })*/
       }
       else {
         socket.emit('already used', data.name);
         console.log(data.name + " username already used");
-      }
+      }  
     });
   });
-  socket.on("login attempt", function (data) {
-    //console.log("login attempt" + JSON.stringify(data));
-    User.findOne({
+
+ socket.on("login attempt", function (data) {
+    console.log("login attempt" + JSON.stringify(data));
+    let match = false;
+    let query = usersref.where("userName","==",data.user).get()
+    .then(users => { 
+      if (users.empty) {
+        console.log('No matching documents.');
+        socket.emit("login failed");
+        return;
+      }  
+      users.forEach(user => {
+        console.log(user.data().userName)
+        if (user.data().password === data.pass) {
+          match = true;
+        }
+      });
+      if(match){
+        updateOne("users",data.user,{
+          visitNum: FieldValue.increment(1),
+          lastLogin: FieldValue.serverTimestamp(),
+          online:true
+        })
+        if(data.sub){
+          newD2("subs",{
+            userName: data.user,
+            sub: data.sub
+          })
+        }
+        socket.emit("logged in", data.user);
+      }
+      else {
+        socket.emit("login failed");
+      }
+    })
+    /*User.findOne({
       where: {
         userName: data.user
       }
@@ -663,13 +635,13 @@ io.sockets.on('connection', function (socket) {
           user: data.user
         };
         onlineplayers[id] = newplayer;
-        /*console.log("player initalized " + data.user);
+        console.log("player initalized " + data.user);
         io.emit("in game players", {
           id: id,
           onlineplayers: onlineplayers
-        });*/
+        });
         //console.log(onlineplayers);
-        User.findAll().then(users => {
+        /*User.findAll().then(users => {
           for (var i in users) {
             //console.log(users[i].dataValues.id, users[i].dataValues.userName);
           }
@@ -699,8 +671,8 @@ io.sockets.on('connection', function (socket) {
       onlineplayers[data.id].y = data.y;
       //console.log(onlineplayers);
       socket.broadcast.emit("ingame players moved", data);
-    });*/
-  });
+    });
+  });*/
   /*socket.on("quoted", (data) => {
     //console.log(data)
     User.findOne({
@@ -764,18 +736,14 @@ io.sockets.on('connection', function (socket) {
       else {
         socket.emit("login failed");
       }  
-    })
-  })*/
+    })*/
+  })
   socket.on("idle", (user) => {
     //console.log(user + " left")
     usertimouts[user] = setTimeout(function () {
-      User.update({
-        online: false
-      }, {
-        where: {
-          userName: user
-        }
-      });
+      updateOne("users",user,{
+        online:false
+      })
     }, 2000 * 60 * 4.9);
   })
   socket.on("active", (user) => {
