@@ -10,6 +10,7 @@ var htmls = [
   {path:"voicequizzing",name:"voice quizzing"},
   {path:"tournament",name:"online tournaments"},
   {path:"search",name:"search"},
+  {path:"settings",name:"settings"},
 ]
 var navopen = false;
 

@@ -56,9 +56,11 @@ exports.asort = (a,t,s) => {
     }
     else if(t==="hl"&&a[i].score>ha2[a[i].ch].score){
       ha2[a[i].ch] = a[i]
+      //console.log("new best for "+a[i].ch+" score: "+a[i].score+ " type: "+a[i].type)
     }
-    else if(a[i].score<ha2[a[i].ch].score){
+    else if(t==="lh"&&a[i].score<ha2[a[i].ch].score){
       ha2[a[i].ch] = a[i]
+      //console.log("new best for "+a[i].ch+" score: "+a[i].score+ " type: "+a[i].type)
     }
   }
 //console.log(ha2)

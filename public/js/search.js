@@ -41,14 +41,14 @@ const search = function(s){
       for(var j = 0;j<a[i].length;j++){
         al ++;
         if (i <= 13) {
-          a[i][j] = "<div class = 'verse' id = 'Hebrews-" + (i+1) + ":" + (j + 1) + "'><b>Hebrews " + (i+1) + ":" + (j + 1) + "</b> " + a[i][j];
+          a[i][j] = "<div class = 'verse' id = 'Hebrews-" + (i+1) + ":" + (j + 1) + "'><b>Hebrews " + (i+1) + ":" + (j + 1) + "</b> " + a[i][j].replace(pattern,"<b style = 'color:red;'>$1</b>");;
         } else if (i <= 18 && i > 12) {
-          a[i][j] = "<div class = 'verse' id = '1Peter-" + (i+1-12) + ":" + (j + 1) + "'><b>1Peter " + (i+1-12) + ":" + (j + 1) + "</b> " + a[i][j];
+          a[i][j] = "<div class = 'verse' id = '1Peter-" + (i+1-12) + ":" + (j + 1) + "'><b>1Peter " + (i+1-12) + ":" + (j + 1) + "</b> " + a[i][j].replace(pattern,"<b style = 'color:red;'>$1</b>");;
         } else {
-          a[i][j] = "<div class = 'verse' id = '2Peter-" + (i+1-18) + ":" + (j + 1) + "'><b>2Peter " + (i+1-18) + ":" + (j + 1) + "</b> " + a[i][j];
+          a[i][j] = "<div class = 'verse' id = '2Peter-" + (i+1-18) + ":" + (j + 1) + "'><b>2Peter " + (i+1-18) + ":" + (j + 1) + "</b> " + a[i][j].replace(pattern,"<b style = 'color:red;'>$1</b>");;
         }
         let k = document.createElement("div");
-        k.innerHTML = a[i][j].replace(pattern,"<b style = 'color:red;'>$1</b>");
+        k.innerHTML = a[i][j]
         dreamsList.append(k)
       }
     }

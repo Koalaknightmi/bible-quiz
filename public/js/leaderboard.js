@@ -35,8 +35,9 @@ var filllb = function(a,ch){
       var lplace = document.createElement("tr");
       lplace.id = "place";
       lplace.className = "l-tr";
+      console.log(cha[id].profileIMG)
       lplace.innerHTML = "<td>" + (id + 1) + "</td><td><img width = '25' height = '25' src = '" + cha[id].profileIMG + "' alt = '" + cha[id].userName +
-        "'s' profile image'/></td><td><a class = 'profilelink' style = 'color:" + cha[id].nameCOL +
+        "'s' profile image'/></td><td><a class = 'profilelink' style = 'color:" + cha[id].nameCOl +
         "' href = '/user/" + cha[id].userName + "'>" + cha[id].userName + "</a></td><td>" + cha[id].score +
         "</td>";
       lboards.appendChild(lplace);

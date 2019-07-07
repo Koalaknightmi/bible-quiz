@@ -4,28 +4,34 @@ const socketio = require('socket.io');
 const http = require('http');
 const app = express();
 const server = http.Server(app);
-var p2pserver = require('socket.io-p2p-server').Server
+var p2pserver = require('socket.io-p2p-server').Server;
 const io = socketio(server); // Attach socket.io to our server
-const email = "NazareneBibleQuizOnline@bible-quiz-online.glitch.me"
+const email = "NazareneBibleQuizOnline@bible-quiz-online.glitch.me";
 const hbs = require('hbs');
 const webPush = require('web-push');
 var bodyParser = require('body-parser');
 var serveIndex = require('serve-index');
-var serveStatic = require('serve-static')
+var serveStatic = require('serve-static');
 var fs = require('fs');
-const frameguard = require('frameguard')
+const frameguard = require('frameguard');
+const fileUpload = require('express-fileupload');
 const f = require("./functions");
+var Jimp = require('jimp');
 //const db = require("./database");
 /*app.use(frameguard({
   action: 'SAMEORIGIN'
 }))*/
-
-app.use(express.json()) // for parsing application/json
-app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
-app.use('/files', serveIndex('/', {'icons': true}));
+app.use(express.json()); // for parsing application/json
+app.use(express.urlencoded({
+  extended: true
+})); // for parsing application/x-www-form-urlencoded
+app.use(fileUpload());
+app.use('/files', serveIndex('/', {
+  'icons': true
+}));
 app.use('/files', serveStatic('/'));
-app.post("/test",(req,res)=>{
-  console.log(req.body)// so when you run 
+app.post("/test", (req, res) => {
+  console.log(req.body); // so when you run 
   /*
   fetch('/test', {
         method: 'POST', // *GET, POST, PUT, DELETE, etc.
@@ -34,9 +40,9 @@ app.post("/test",(req,res)=>{
     });
     that in the console when veiwing the page its sopposed to log the body but it ist working plz help
   */
-  console.log('form body:', req.body, req.get('content-type'))
+  console.log('form body:', req.body, req.get('content-type'));
   res.end(); // 👈 don't forget this!
-}); 
+});
 /*const testFolder = __dirname+'/veiws/partials';
 
 fs.readdir(testFolder, (err, files) => {
@@ -71,9 +77,11 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://bible-quiz-e1ef4.firebaseio.com"
 });
+//var storageRef = admin.storage().bucket();
 var db = admin.firestore();
 var usersref = db.collection("users");
-var subsref = db.collection("users");
+var subsref = db.collection("subs");
+var tscoresref = db.collection("typequizzingscores");
 let FieldValue = admin.firestore.FieldValue;
 var usertimouts = {}
 var payload = "hi there";
@@ -93,32 +101,114 @@ const sendmail = require('sendmail')({
   },
   silent: false
 });
-var newD = function(c,n,data){
+var newD = function (c, n, data) {
   let docRef = db.collection(c).doc(n);
-  data.createdAt = FieldValue.serverTimestamp();
-  data.updatedAt = FieldValue.serverTimestamp();
+  data.createdAt = new Date().toISOString();
+  data.updatedAt = new Date().toISOString();
   docRef.set(data);
 }
-var newD2 = function(c,data,t){
+var newD2 = function (c, data, t) {
   let addDoc = db.collection(c).add(data).then(ref => {
-    if(t){
+    if (t) {
       t(ref)
     }
   });
 }
-var updateOne = function(c,n,data){
+/*var users = [
+{"id":2,"userName":"koalastrikermi","score":10,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-13T16:00:39.613Z","updatedAt":"2019-06-17T20:35:50.774Z"},
+
+{"id":3,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-false","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-13T16:05:23.872Z","updatedAt":"2019-06-17T20:35:50.774Z"},
+
+{"id":4,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-13T16:07:53.938Z","updatedAt":"2019-06-17T20:35:50.774Z"},
+
+{"id":5,"userName":"koalastrikermi","score":2592,"nameCOl":null,"type":"quoted-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-13T17:19:09.283Z","updatedAt":"2019-06-17T20:35:50.774Z"},
+
+{"id":6,"userName":"koalastrikermi2","score":-105,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/20e968ff-97d4-4430-83ad-42189e4f368d%2Favatar_generic.png?1545099848845","ch":"h1","createdAt":"2019-06-13T19:27:28.456Z","updatedAt":"2019-06-16T18:58:31.348Z"},
+
+{"id":15,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-19T01:31:44.359Z","updatedAt":"2019-06-19T01:31:44.359Z"},
+
+{"id":16,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-19T01:33:32.401Z","updatedAt":"2019-06-19T01:33:32.401Z"},
+
+{"id":17,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-19T01:34:41.725Z","updatedAt":"2019-06-19T01:34:41.725Z"},
+
+{"id":18,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-19T16:24:23.068Z","updatedAt":"2019-06-19T16:24:23.068Z"},
+
+{"id":19,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-19T16:30:32.771Z","updatedAt":"2019-06-19T16:30:32.771Z"},
+
+{"id":20,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-false","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-19T17:16:30.208Z","updatedAt":"2019-06-19T17:16:30.208Z"},
+
+{"id":21,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-19T18:04:39.036Z","updatedAt":"2019-06-19T18:04:39.036Z"},
+
+{"id":22,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-19T18:04:52.243Z","updatedAt":"2019-06-19T18:04:52.243Z"},
+
+{"id":23,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-20T15:57:25.285Z","updatedAt":"2019-06-20T15:57:25.285Z"},
+
+{"id":24,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-20T15:58:30.459Z","updatedAt":"2019-06-20T15:58:30.459Z"},
+
+{"id":25,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-20T16:00:10.125Z","updatedAt":"2019-06-20T16:00:10.125Z"},
+
+{"id":26,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-20T16:01:06.431Z","updatedAt":"2019-06-20T16:01:06.431Z"},
+
+{"id":27,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-20T16:02:45.502Z","updatedAt":"2019-06-20T16:02:45.502Z"},
+
+{"id":28,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-20T16:03:26.430Z","updatedAt":"2019-06-20T16:03:26.430Z"},
+
+{"id":29,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-false","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-20T16:06:09.459Z","updatedAt":"2019-06-20T16:06:09.459Z"},
+
+{"id":30,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-20T16:08:01.755Z","updatedAt":"2019-06-20T16:08:01.755Z"},
+
+{"id":31,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-20T16:09:16.668Z","updatedAt":"2019-06-20T16:09:16.668Z"},
+
+{"id":32,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-20T16:09:32.421Z","updatedAt":"2019-06-20T16:09:32.421Z"},
+
+{"id":33,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-20T16:09:32.439Z","updatedAt":"2019-06-20T16:09:32.439Z"},
+
+{"id":34,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-20T16:16:30.067Z","updatedAt":"2019-06-20T16:16:30.067Z"},
+
+{"id":35,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-20T16:16:30.110Z","updatedAt":"2019-06-20T16:16:30.110Z"},
+
+{"id":36,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-20T16:16:30.276Z","updatedAt":"2019-06-20T16:16:30.276Z"},
+
+{"id":37,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-20T16:23:36.253Z","updatedAt":"2019-06-20T16:23:36.253Z"},
+
+{"id":38,"userName":"koalastrikermi","score":0,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-20T16:24:36.152Z","updatedAt":"2019-06-20T16:24:36.152Z"},
+
+{"id":39,"userName":"koalastrikermi","score":210,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-21T17:25:13.152Z","updatedAt":"2019-06-21T17:25:13.152Z"},
+
+{"id":40,"userName":"koalastrikermi","score":1100,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-21T18:27:39.518Z","updatedAt":"2019-06-21T18:27:39.518Z"},
+
+{"id":41,"userName":"koalastrikermi","score":115,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h2","createdAt":"2019-06-21T20:57:02.685Z","updatedAt":"2019-06-21T20:57:02.685Z"},
+
+{"id":42,"userName":"koalastrikermi","score":525,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h2","createdAt":"2019-06-22T18:03:56.236Z","updatedAt":"2019-06-22T18:03:56.236Z"},
+
+{"id":43,"userName":"koalastrikermi","score":200,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-22T21:00:34.488Z","updatedAt":"2019-06-22T21:00:34.488Z"},
+
+{"id":44,"userName":"koalastrikermi","score":9,"nameCOl":"blue","type":"quoted-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-22T22:17:21.407Z","updatedAt":"2019-06-22T22:17:21.407Z"},
+
+{"id":45,"userName":"koalastrikermi","score":9,"nameCOl":"blue","type":"quoted-false","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-22T22:19:19.224Z","updatedAt":"2019-06-22T22:19:19.224Z"},
+
+{"id":46,"userName":"koalastrikermi","score":-40,"nameCOl":null,"type":"completed-true","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h3","createdAt":"2019-06-23T17:26:51.676Z","updatedAt":"2019-06-23T17:26:51.676Z"},
+
+{"id":47,"userName":"River gal","score":25,"nameCOl":"blue","type":"quoted-true","profileIMG":"https://cdn.glitch.com/20e968ff-97d4-4430-83ad-42189e4f368d%2Favatar_generic.png?1545099848845","ch":"h1","createdAt":"2019-06-24T01:40:52.853Z","updatedAt":"2019-06-24T01:40:52.853Z"},
+
+{"id":48,"userName":"koalastrikermi","score":20,"nameCOl":"blue","type":"quoted-false","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-25T17:55:52.798Z","updatedAt":"2019-06-25T17:55:52.798Z"},
+
+{"id":49,"userName":"koalastrikermi","score":20,"nameCOl":"blue","type":"quoted-false","profileIMG":"https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859","ch":"h1","createdAt":"2019-06-25T17:55:52.893Z","updatedAt":"2019-06-25T17:55:52.893Z"}]
+for(var i = 0;i<users.length;i++){
+  newD2("typequizzingscores",JSON.parse(JSON.stringify(users[i])))
+}*/
+var updateOne = function (c, n, data) {
   let dRef = db.collection(c).doc(n);
   data.updatedAt = FieldValue.serverTimestamp();
   dRef.update(data);
 }
-
 var onlineplayers = {};
 var Admins = ["koalastrikermi", ];
 //var chatrooms = {};
 var User;
 var typequizzingscores;
 var subs;
-var go_p2p = function(socket,room){
+var go_p2p = function (socket, room) {
   p2pserver(socket, null, room)
 }
 var push = f.push;
@@ -127,14 +217,12 @@ var totime = f.totime;
 var asort = f.asort;
 //made by porter on khan academy https://www.Khanacademy.org/profile/battleboy21
 String.prototype.pad = f.pad;
-
 /*hbs.registerHelper('filter', function (context, options) {
   var a = context.sort(function (a, b) {
     return b.score - a.score;
   });
   return options.fn(this) + "<td>" + a[0].score + "</td>"
 });*/
-
 function Player(id, username, col, r) {
   this.user = username;
   this.id = id;
@@ -149,17 +237,17 @@ function Player(id, username, col, r) {
   this.rz = 0;
   this.entity = null;
 }
+
 var gamerooms = {};
 hbs.registerPartials(__dirname + '/veiws/partials');
 app.set('view engine', 'hbs');
 app.set('views', __dirname + '/veiws/');
-app.use((req, resp, next) => {
-  reqs ++;
+app.use((req, res, next) => {
+  reqs++;
   //console.log(reqs)
   next();
 });
 app.use(express.static('public'));
-
 app.get('/', function (request, response) {
   ip = request.headers['x-forwarded-for']
   response.sendFile(__dirname + '/public/html/index.html');
@@ -174,68 +262,29 @@ app.get('/gettext', function (request, res) {
   });
 });
 app.get('/leaderboardfetch', function (request, res) {
-  db.collection("typequizzingscores").get()
-    .then((scores) => {
-      let data = [];
-      snapshot.forEach((doc) => {        
-        data.push(doc.data())
-      });
-      res.writeHead(200, {
-        'Content-Type': 'json'
-      });
-      res.write(JSON.stringify(data));
-      res.end();
-    })
+  db.collection("typequizzingscores").get().then((scores) => {
+    let data = [];
+    scores.forEach((doc) => {
+      let dta = doc.data();
+      dta.profileIMG = "/images/users/"+encodeURI(dta.userName)+".png"
+      data.push(dta)
+    });
+    res.writeHead(200, {
+      'Content-Type': 'json'
+    });
+    res.write(JSON.stringify(data));
+    res.end();
+  })
 });
-
-app.post("/postquote",(req,res) => {
+app.post("/postquote", (req, res) => {
   var data = req.body;
   let match = false;
-  let query = usersref.where("userName","==",data.user).get()
-  .then(users => { 
+  let query = usersref.where("userName", "==", data.user).get().then(users => {
     if (users.empty) {
       console.log('No matching documents.');
       socket.emit("login failed");
       return;
-    }  
-    users.forEach(user => {
-      console.log(user.data().userName)
-      if (user.data().password === data.pass) {
-        match = true;
-      }
-    });
-  });
-    if(match){
-      if (data.prompt === 0) {
-        prompt = false;
-      }
-      else {
-        prompt = true;
-      }
-      newD2("typequizzingscores",{
-        ch: data.ch,
-        userName: data.user,
-        score: data.score,
-        type: "quoted-" + prompt,
-        profileIMG: user.dataValues.profileIMG,
-        nameCOl: user.dataValues.nameCOl
-      });
     }
-  res.writeHead(200, {
-    'Content-Type': 'application/json'
-  });
-  res.end();
-})
-app.post("/vpostquote",(req,res) => {
-  var data = req.body;
-  let match = false;
-  let query = usersref.where("userName","==",data.user).get()
-  .then(users => { 
-    if (users.empty) {
-      console.log('No matching documents.');
-      socket.emit("login failed");
-      return;
-    }  
     users.forEach(user => {
       console.log(user.data().userName)
       if (user.data().password === data.pass) {
@@ -243,94 +292,18 @@ app.post("/vpostquote",(req,res) => {
       }
     });
   });
-    if(match){
-      if (data.prompt === 0) {
-        prompt = false;
-      }
-      else {
-        prompt = true;
-      }
-      newD2("typequizzingscores",{
-        ch: data.ch,
-        userName: data.user,
-        score: data.score,
-        type: "quoted-" + prompt+"-v",
-        profileIMG: user.dataValues.profileIMG,
-        nameCOl: user.dataValues.nameCOl
-      });
-    }
-  res.writeHead(200, {
-    'Content-Type': 'application/json'
-  });
-  res.end();
-})
-app.post("/postcomplete",(req,res) => {
-  var data = req.body;
-  let match = false;
-  let query = usersref.where("userName","==",data.user).get()
-  .then(users => { 
-    if (users.empty) {
-      console.log('No matching documents.');
-      socket.emit("login failed");
-      return;
-    }  
-    users.forEach(user => {
-      console.log(user.data().userName)
-      if (user.data().password === data.pass) {
-        match = true;
-      }
-    });
-  });
-    if(match){
-      if (data.prompt === 0) {
-        prompt = false;
-      }
-      else {
-        prompt = true;
-      }
-      newD2("typequizzingscores",{
-        ch: data.ch,
-        userName: data.user,
-        score: data.score,
-        type: "completed-" + prompt,
-        profileIMG: user.dataValues.profileIMG,
-        nameCOl: user.dataValues.nameCOl
-      });
-    }
-  res.writeHead(200, {
-    'Content-Type': 'application/json'
-  });
-  res.end();
-})
-app.post("/vpostcomplete",(req,res) => {
-  var data = req.body;
-  let match = false;
-  let query = usersref.where("userName","==",data.user).get()
-  .then(users => { 
-    if (users.empty) {
-      console.log('No matching documents.');
-      socket.emit("login failed");
-      return;
-    }  
-    users.forEach(user => {
-      console.log(user.data().userName)
-      if (user.data().password === data.pass) {
-        match = true;
-      }
-    });
-  });
-  if(match){
+  if (match) {
     if (data.prompt === 0) {
       prompt = false;
     }
     else {
       prompt = true;
     }
-    newD2("typequizzingscores",{
+    newD2("typequizzingscores", {
       ch: data.ch,
       userName: data.user,
       score: data.score,
-      type: "completed-" + prompt+"-v",
+      type: "quoted-" + prompt,
       profileIMG: user.dataValues.profileIMG,
       nameCOl: user.dataValues.nameCOl
     });
@@ -340,95 +313,351 @@ app.post("/vpostcomplete",(req,res) => {
   });
   res.end();
 })
-
-app.get('/user/:user', function (request, res) {
-  //console.log(request.params.user)
-  let userdata;
-  //let typequizzingscores;
-  let friendsdata = [];
-  var username = request.params.user;
-  let userquery = usersref.where("userName","==",data.user).get()
-  .then(users => { 
+app.post("/vpostquote", (req, res) => {
+  var data = req.body;
+  let match = false;
+  let query = usersref.where("userName", "==", data.user).get().then(users => {
     if (users.empty) {
       console.log('No matching documents.');
       socket.emit("login failed");
       return;
-    }  
+    }
     users.forEach(user => {
-      useruser.data().email = "";
-      useruser.data().lastLogin = timeSince(useruser.data().lastLogin)
-      useruser.data().state = useruser.data().state.toUpperCase();
-      userdata = user.data();
+      console.log(user.data().userName)
+      if (user.data().password === data.pass) {
+        match = true;
+      }
     });
   });
-  if(userdata.friends){
-    for(var i = 0;i<userdata.friends.length;i++){
-      let friendquery = usersref.where("userName","==",data.user).get()
-      .then(users => { 
-        if (users.empty) {
-          console.log('No matching documents.');
-          socket.emit("login failed");
-          return;
-        }  
-        users.forEach(user => {
-          friendsdata.push(user.data())
-        });
+  if (match) {
+    if (data.prompt === 0) {
+      prompt = false;
+    }
+    else {
+      prompt = true;
+    }
+    newD2("typequizzingscores", {
+      ch: data.ch,
+      userName: data.user,
+      score: data.score,
+      type: "quoted-" + prompt + "-v",
+      profileIMG: user.dataValues.profileIMG,
+      nameCOl: user.dataValues.nameCOl
+    });
+  }
+  res.writeHead(200, {
+    'Content-Type': 'application/json'
+  });
+  res.end();
+})
+app.post("/postcomplete", (req, res) => {
+  var data = req.body;
+  let match = false;
+  let query = usersref.where("userName", "==", data.user).get().then(users => {
+    if (users.empty) {
+      console.log('No matching documents.');
+      socket.emit("login failed");
+      return;
+    }
+    users.forEach(user => {
+      console.log(user.data().userName)
+      if (user.data().password === data.pass) {
+        match = true;
+      }
+    });
+  });
+  if (match) {
+    if (data.prompt === 0) {
+      prompt = false;
+    }
+    else {
+      prompt = true;
+    }
+    newD2("typequizzingscores", {
+      ch: data.ch,
+      userName: data.user,
+      score: data.score,
+      type: "completed-" + prompt,
+      profileIMG: user.dataValues.profileIMG,
+      nameCOl: user.dataValues.nameCOl
+    });
+  }
+  res.writeHead(200, {
+    'Content-Type': 'application/json'
+  });
+  res.end();
+})
+app.post("/vpostcomplete", (req, res) => {
+  var data = req.body;
+  let match = false;
+  let query = usersref.where("userName", "==", data.user).get().then(users => {
+    if (users.empty) {
+      console.log('No matching documents.');
+      socket.emit("login failed");
+      return;
+    }
+    users.forEach(user => {
+      console.log(user.data().userName)
+      if (user.data().password === data.pass) {
+        match = true;
+      }
+    });
+  });
+  if (match) {
+    if (data.prompt === 0) {
+      prompt = false;
+    }
+    else {
+      prompt = true;
+    }
+    newD2("typequizzingscores", {
+      ch: data.ch,
+      userName: data.user,
+      score: data.score,
+      type: "completed-" + prompt + "-v",
+      profileIMG: user.dataValues.profileIMG,
+      nameCOl: user.dataValues.nameCOl
+    });
+  }
+  res.writeHead(200, {
+    'Content-Type': 'application/json'
+  });
+  res.end();
+})
+app.post("/setProfileImg", (req, res) => {
+  //console.log(req,req.get('content-type'))
+  let match = false;
+  let query = usersref.where("userName", "==", req.body.user).get().then(users => {
+    if (users.empty) {
+      console.log('No matching documents.');
+      //socket.emit("login failed");
+      return;
+    }
+    users.forEach(user => {
+      console.log(user.data().password === req.body.pass)
+      if (user.data().password === req.body.pass) {
+        match = true;
+        console.log("matched")
+      }
+    });
+  if(match){
+    let ncol = req.body.namecol;
+    console.log(req.body)
+    if(req.body.ncolorchange){
+      updateOne("users",req.body.user,{
+        nameCOl:ncol
+      })
+      let tscoresquery = tscoresref.where("userName", "==", username).get().then(scores => {
+        scores.forEach(user => {
+          updateOne("typequizzingscores",user.id,{
+            nameCOl:ncol
+          })
+        })
+      })
+    }
+    if(req.files!==null){
+       let sampleFile = req.files.file;
+      sampleFile.mv(__dirname + '/public/images/users/' + sampleFile.name , function(err) {
+        if (err)
+          return res.status(500)/*.send(err);*/
+
+          Jimp.read(__dirname + '/public/images/users/' + sampleFile.name, (err, img) => {
+            if (err) throw err;
+
+            fs.unlink(__dirname + '/public/images/users/' + sampleFile.name, function (err) {
+              if (err) throw err;
+              console.log('File deleted!');
+            });
+            img
+              .write(__dirname + '/public/images/users/' + req.body.user + '.png'); // save
+
+          });
+        //res.sendFile(__dirname + '/public/images/users/' + req.body.user + '.png');
       });
     }
+    
   }
-  var ts = {};
-  var sc = [];
-  var cts = [];
-  var qts = [];
-  var cpts = [];
-  var qpts = [];
-  let tscoresquery = usersref.where("userName","==",data.user).get()
-    .then(scores => { 
-      if (scores.empty) {
-        console.log('No matching documents.');
-        socket.emit("login failed");
-        return;
-      }  
-      scores.forEach(score => {
-        score.data().createdAt = timeSince(score.data().createdAt)
-        if (score.data().type.indexOf("quote") !== -1) {
-          score.data().score = totime(score.data().score);
-        }
-        if (score.data().type === "quoted-true") {
-          score.data().type = "quoted with prompt"
-          qpts.push(scores[i].dataValues)
-        }
-        else if (score.data().type === "quoted-false") {
-          score.data().type = "quoted without prompt"
-          qts.push(score.data())
-        }
-        else if (scores[i].type === "completed-false") {
-          score.data().type = "completed without prompt"
-          cts.push(score.data())
-        }
-        else {
-          score.data().type = "completed with prompt"
-          cpts.push(scores.data())
-        } 
-        sc.push(scores.data())
-        //console.log()
-        friendsdata.push(score.data())
-      });
-    });  
-    cts = asort(cts,"hl","score")
-    cpts = asort(cpts,"hl","score")
-    qpts = asort(qpts,"h","score")
-    qts = asort(qts,"h","score")
-    ts = {c:cts,cp:cpts,q:qts,qp:qpts};
-    res.render('user', {
-      userdata: userdata,
-      scoresdata: typequizzingscores,
-      friendsdata: friendsdata,
-      ts:ts
-    });
 });
+})
+app.get('/user/:user', function (request, res) {
+  var userdata = {};
+  var typequizzingscores = [];
+  var friendsdata = [];
+  var scoresdata = [];
+  var username = request.params.user;
 
+  let userquery = usersref.where("userName", "==", username).get().then(users => {
+    console.log(username)
+    //console.log(users)
+    if (users.empty) {
+      console.log('No matching documents.1');
+      //socket.emit("login failed");
+      //return;
+    }
+    users.forEach(user => {
+      let dt = user.data();
+      dt.email = "";
+      //console.log(new Date(dt.lastLogin))
+      dt.lastLogin = timeSince(new Date(dt.lastLogin))
+      dt.state = dt.state.toUpperCase();
+      dt.profileIMG = "/images/users/"+encodeURI(dt.profileIMG)+".png"
+      userdata = dt;
+    });
+    //console.log(userdata)
+    if (userdata.friends.length > 0) {
+      for (var i = 0; i < userdata.friends.length; i++) {
+        log(userdata.friends[i])
+        let friendquery = usersref.where("userName", "==", userdata.friends[i]).get().then(users => {
+          console.log(users.empty)
+          //console.log(users)
+          if (users.empty) {
+            console.log('No matching documents.2');
+            //socket.emit("login failed");
+            return;
+          }
+          users.forEach(user => {
+            let dta = user.data();
+            dta.state = dta.state.toUpperCase();
+            dta.profileIMG = "/images/users/"+encodeURI(dta.profileIMG)+".png"
+            friendsdata.push(dta)
+          });
+          log(friendsdata)
 
+        });
+      }          
+      var ts = {};
+      var cts = [];
+      var qts = [];
+      var cpts = [];
+      var qpts = [];
+      let tscoresquery = tscoresref.where("userName", "==", username).get().then(scores => {
+        if (scores.empty) {
+          console.log('No matching documents.3');
+          // socket.emit("login failed");
+         // return;
+         res.render('user', {
+          userdata: userdata,
+          scoresdata: typequizzingscores,
+          friendsdata: friendsdata,
+          ts: ts
+        });
+        }
+        else
+        {
+          scores.forEach(score => {
+          let scdt = score.data();
+          scdt.createdAt = timeSince(new Date(scdt.createdAt));
+          if (scdt.type.indexOf("quote") !== -1) {
+            scdt.score = totime(scdt.score);
+          }
+          if (scdt.type === "quoted-true") {
+            scdt.type = "quoted with prompt";
+            qpts.push(scdt);
+          }
+          else if (scdt.type === "quoted-false") {
+            scdt.type = "quoted without prompt";
+            qts.push(scdt);
+          }
+          else if (scdt.type === "completed-false") {
+            scdt.type = "completed without prompt";
+            cts.push(scdt);
+          }
+          else {
+            scdt.type = "completed with prompt";
+            cpts.push(scdt);
+          }
+          typequizzingscores.push(scdt);
+        });
+        cts = asort(cts, "hl", "score")
+        cpts = asort(cpts, "hl", "score")
+        qpts = asort(qpts, "lh", "score")
+        qts = asort(qts, "lh", "score")
+        ts = {
+          c: cts,
+          cp: cpts,
+          q: qts,
+          qp: qpts
+        };
+        res.render('user', {
+          userdata: userdata,
+          scoresdata: typequizzingscores,
+          friendsdata: friendsdata,
+          ts: ts
+        });
+        }
+        
+        
+      });
+    }
+    else {
+      var ts = {};
+      var cts = [];
+      var qts = [];
+      var cpts = [];
+      var qpts = [];
+      let tscoresquery = tscoresref.where("userName", "==", username).get().then(scores => {
+        if (scores.empty) {
+          console.log('No matching documents.');
+          //socket.emit("login failed");
+          res.render('user', {
+          userdata: userdata,
+          scoresdata: typequizzingscores,
+          friendsdata: friendsdata,
+          ts: ts
+        });
+        }
+        else{
+                  console.log(scores.empty)
+        scores.forEach(score => {
+          let scdt = score.data();
+          //log(scdt.type)
+          scdt.createdAt = timeSince(new Date(scdt.createdAt))
+          if (scdt.type.indexOf("quote") !== -1) {
+            scdt.score = totime(scdt.score);
+          }
+          if (scdt.type === "quoted-true") {
+            scdt.type = "quoted with prompt"
+            qpts.push(scdt)
+          }
+          else if (scdt.type === "quoted-false") {
+            scdt.type = "quoted without prompt"
+            qts.push(scdt)
+          }
+          else if (scdt.type === "completed-false") {
+            scdt.type = "completed without prompt"
+            cts.push(scdt)
+          }
+          else {
+            scdt.type = "completed with prompt"
+            cpts.push(scdt)
+          }
+          typequizzingscores.push(scdt)
+          //console.log()
+          //friendsdata.push(score.data())
+        });
+        cts = asort(cts, "hl", "score")
+        cpts = asort(cpts, "hl", "score")
+        qpts = asort(qpts, "lh", "score")
+        qts = asort(qts, "lh", "score")
+        ts = {
+          c: cts,
+          cp: cpts,
+          q: qts,
+          qp: qpts
+        };
+        res.render('user', {
+          userdata: userdata,
+          scoresdata: typequizzingscores,
+          friendsdata: friendsdata,
+          ts: ts
+        });
+        }
+
+      });
+    }
+  });
+  /**/
+});
 io.sockets.on('connection', function (socket) {
   /*socket.on('message', function (data) {
     User.findOne({
@@ -449,22 +678,25 @@ io.sockets.on('connection', function (socket) {
   socket.on("register", function (data, sub) {
     console.log(sub)
     let used = false;
-  let query = usersref.get()
-  .then(users => { 
-    users.forEach(user => {
-      console.log(user)
-      if (user.id === data.name) {
-        used = true;
-      }
-    });
-      if(!used){
+    let query = usersref.get().then(users => {
+      users.forEach(user => {
+        console.log(user)
+        if (user.id === data.name) {
+          used = true;
+        }
+      });
+      if (!used) {
         if (Admins.indexOf(data.name) > -1) {
-          newD("users",data.name,{
+          fs.writeFile(__dirname + '/public/images/users/' +data.name+ '.png',__dirname + '/public/images/avatar generic.png', function (err) {
+            if (err) throw err;
+            console.log('Saved!');
+          });
+          newD("users", data.name, {
             id: 1,
             userName: data.name,
             email: data.email,
             password: data.pass,
-            lastLogin: FieldValue.serverTimestamp(),
+            lastLogin: new Date().toISOString(),
             isAdmin: true,
             visitNum: 0,
             nameCOl: 'blue',
@@ -475,12 +707,12 @@ io.sockets.on('connection', function (socket) {
             friends: [],
             monthScore: 0,
             allTimeScore: 0,
-            profileIMG: 'https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859',
+            profileIMG: data.name,
             state: data.state,
             ipAD: ip,
             banned: false
           });
-          newD2("subs",{
+          newD2("subs", {
             userName: data.name,
             sub: sub
           })
@@ -502,12 +734,16 @@ io.sockets.on('connection', function (socket) {
           })*/
         }
         else {
-          newD("users",data.name,{
+          fs.writeFile(__dirname + '/public/images/users/' +data.name+ '.png',__dirname + '/public/images/avatar generic.png', function (err) {
+            if (err) throw err;
+            console.log('Saved!');
+          });
+          newD("users", data.name, {
             id: 1,
             userName: data.name,
             email: data.email,
             password: data.pass,
-            lastLogin: FieldValue.serverTimestamp(),
+            lastLogin: new Date().toISOString(),
             isAdmin: false,
             visitNum: 0,
             nameCOl: 'blue',
@@ -518,12 +754,12 @@ io.sockets.on('connection', function (socket) {
             friends: [],
             monthScore: 0,
             allTimeScore: 0,
-            profileIMG: 'https://cdn.glitch.com/eb5b036c-82b3-497e-9d05-ce2a5a9d85e1%2FKoala.jpg?v=1560803069859',
+            profileIMG: data.name,
             state: data.state,
             ipAD: ip,
             banned: false
           });
-          newD2("subs",{
+          newD2("subs", {
             userName: data.name,
             sub: sub
           })
@@ -564,34 +800,32 @@ io.sockets.on('connection', function (socket) {
       else {
         socket.emit('already used', data.name);
         console.log(data.name + " username already used");
-      }  
+      }
     });
   });
-
- socket.on("login attempt", function (data) {
+  socket.on("login attempt", function (data) {
     console.log("login attempt" + JSON.stringify(data));
     let match = false;
-    let query = usersref.where("userName","==",data.user).get()
-    .then(users => { 
+    let query = usersref.where("userName", "==", data.user).get().then(users => {
       if (users.empty) {
         console.log('No matching documents.');
         socket.emit("login failed");
         return;
-      }  
+      }
       users.forEach(user => {
         console.log(user.data().userName)
         if (user.data().password === data.pass) {
           match = true;
         }
       });
-      if(match){
-        updateOne("users",data.user,{
+      if (match) {
+        updateOne("users", data.user, {
           visitNum: FieldValue.increment(1),
-          lastLogin: FieldValue.serverTimestamp(),
-          online:true
+          lastLogin: new Date().toISOString(),
+          online: true
         })
-        if(data.sub){
-          newD2("subs",{
+        if (data.sub) {
+          newD2("subs", {
             userName: data.user,
             sub: data.sub
           })
@@ -673,76 +907,76 @@ io.sockets.on('connection', function (socket) {
       socket.broadcast.emit("ingame players moved", data);
     });
   });*/
-  /*socket.on("quoted", (data) => {
-    //console.log(data)
-    User.findOne({
-      where: {
-        userName: data.user
+    /*socket.on("quoted", (data) => {
+      //console.log(data)
+      User.findOne({
+        where: {
+          userName: data.user
+        }
+      }).then(user => {
+        if (user === null) {
+          socket.emit("login failed");
+          //console.log("login failed " + data.user + " is not regestered");
+        }
+        else if (user.dataValues.password === data.pass) {
+      if (data.prompt === 0) {
+        prompt = false;
       }
-    }).then(user => {
-      if (user === null) {
-        socket.emit("login failed");
-        //console.log("login failed " + data.user + " is not regestered");
+      else {
+        prompt = true;
       }
-      else if (user.dataValues.password === data.pass) {
-    if (data.prompt === 0) {
-      prompt = false;
-    }
-    else {
-      prompt = true;
-    }
-    
-      typequizzingscores.create({
-        ch: data.ch,
-        userName: data.user,
-        score: data.score,
-        type: "quoted-" + prompt,
-        profileIMG: user.dataValues.profileIMG,
-        nameCOL: user.dataValues.nameCOl
-      });
       
-      }
-      else {
-        socket.emit("login failed");
-      }  
+        typequizzingscores.create({
+          ch: data.ch,
+          userName: data.user,
+          score: data.score,
+          type: "quoted-" + prompt,
+          profileIMG: user.dataValues.profileIMG,
+          nameCOL: user.dataValues.nameCOl
+        });
+        
+        }
+        else {
+          socket.emit("login failed");
+        }  
+      })
     })
-  })
-  socket.on("completed", (data) => {
-    User.findOne({
-      where: {
-        userName: data.user
-      }
-    }).then(user => {
-      if (user === null) {
-        socket.emit("login failed");
-        //console.log("login failed " + data.user + " is not regestered");
-      }
-      else if (user.dataValues.password === data.pass) {
-    if (data.prompt === 0) {
-      prompt = false;
-    }
-    else {
-      prompt = true;
-    }
-      typequizzingscores.create({
-        ch: data.ch,
-        userName: data.user,
-        score: data.score,
-        type: "completed-" + prompt,
-        profileIMG: user.dataValues.profileIMG,
-        nameCOL: user.dataValues.nameCOl
-      });
+    socket.on("completed", (data) => {
+      User.findOne({
+        where: {
+          userName: data.user
+        }
+      }).then(user => {
+        if (user === null) {
+          socket.emit("login failed");
+          //console.log("login failed " + data.user + " is not regestered");
+        }
+        else if (user.dataValues.password === data.pass) {
+      if (data.prompt === 0) {
+        prompt = false;
       }
       else {
-        socket.emit("login failed");
-      }  
-    })*/
+        prompt = true;
+      }
+        typequizzingscores.create({
+          ch: data.ch,
+          userName: data.user,
+          score: data.score,
+          type: "completed-" + prompt,
+          profileIMG: user.dataValues.profileIMG,
+          nameCOL: user.dataValues.nameCOl
+        });
+        }
+        else {
+          socket.emit("login failed");
+        }  
+      })*/
   })
   socket.on("idle", (user) => {
     //console.log(user + " left")
     usertimouts[user] = setTimeout(function () {
-      updateOne("users",user,{
-        online:false
+      updateOne("users", user, {
+        online: false
       })
     }, 2000 * 60 * 4.9);
   })
@@ -750,7 +984,6 @@ io.sockets.on('connection', function (socket) {
     //console.log(user + " came back")
     clearTimeout(usertimouts[user]);
   })
-  
   /*socket.on('getleaderboard', function (fn) {
     typequizzingscores.findAll().then(scores => {
       console.log(scores); 
@@ -783,7 +1016,6 @@ io.sockets.on('connection', function (socket) {
     io.emit("message", chat);*/
   });
 });
-console.log('Server started.');
 setInterval(() => {
   //tp.get(`http://${process.env.PROJECT_DOMAIN}.glitch.me/`);
 }, 280000);

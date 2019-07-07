@@ -17,7 +17,9 @@
     "serve-index": "^1.8.0",
     "serve-static": "^1.11.1",
     "socket.io-p2p-server": "^1.2.0",
-    "firebase-admin": "8.2.0"
+    "firebase-admin": "8.2.0",
+    "express-fileupload": "1.1.5",
+    "jimp": "0.6.4"
   },
   "engines": {
     "node": "8.x"

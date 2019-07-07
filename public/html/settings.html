@@ -21,6 +21,7 @@
     <!--  <link rel="preload" href="/gethebrews" as="text">
       import the webpage's stylesheet -->
     <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/Psettings.js" defer></script>
     <script>
       if (location.protocol !== "https:") {
         location.protocol = "https:"
@@ -64,6 +65,14 @@
     <main class = "page" id="home">
       <script src="/js/offline.js" defer></script>
       <div id="status"></div>
+      <input type="color" id="m-m-c" name="m-m-c">
+      <label for="m-m-c">username color</label>
+      <form id = "settings" ref='uploadForm'>
+        <label for="file">change your profile image:</label>
+        <input type="file" name="file" id = "file">
+        <br>
+        <input type="submit">
+      </form>
     </main>
     <footer class="kcss-main-footer"><span class="kcss-copyright"><a href="https://repl.it/@Koalaknightmi" target="_blank">Copyright &copy; 2018 Koalastrikermi/koalaknightmi</a></span></footer>
   </body>
