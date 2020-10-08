@@ -2,13 +2,12 @@
 
 <html>
 	{{> head }}
-  <link rel="stylesheet" href="/css/user.css">
-	<body>
+  <body>
     {{> nav }}
     <main class ="page">
         <div id = "profile-wid">
           <div id = "profile-top">
-             <div id = "profile-img-wrap">
+             <div  id = "profile-img-wrap">
                   <img src = {{userdata.profileIMG}}>
                   {{#if userdata.online}}
                       <div style = "background:green" id = "offon" title = "user status"></div>               
@@ -17,7 +16,10 @@
                   {{/if}}
               </div>
               <div id = "p-username">
-                  <a><b id = "name-b">{{userdata.userName}}</b></a>
+                  {{#if userdata.titled}}
+                      <span style = "color:red" id = "btitled" title = "titled?">{{userdata.tabr}}</span>           
+                  {{/if}}
+                  <a><b style = "color:{{userdata.nameCOl}}" id = "name-b">{{userdata.userName}}</b></a>
                   <b class = "state-b">{{userdata.state}}</b>
                    {{#if userdata.isAdmin}}
                     <img class = "admin-logo" width = "20" src = "https://cdn.glitch.com/96dd1b57-087c-49b9-8d7a-02863bc2f271%2Fadmin%20logo.png?v=1560458428292">
@@ -25,19 +27,22 @@
               </div>
               <div id = "p-rating">
                   <img src = "https://cdn.glitch.com/96dd1b57-087c-49b9-8d7a-02863bc2f271%2Ftypequizzing%20logo.png?v=1560458258815" id = "rating-img">
-                  <b id = "rating-b">{{userdata.rankNum}}</b>
+                  <b id = "rating-b">{{userdata.ratings.openOnline.rt}}</b>
               </div>
               <div id = "loggedin">
                 <p>last login: <b id = "lastlogin">{{userdata.lastLogin}}</b></p>
               </div>
           </div>
-          <div id = "profile-widgets">
+          <div id = "profile-widgets" class = "row">
             <div class = "p-widget kcss-col-4" id = "profile-friends">
               <h3 class = "title" id = "friends-title">Friends</h3>
               {{#each friendsdata}}
               <div id = "friend-a">
                 <div class = "friend">
-                <a class = "f-username" href = "/user/{{this.userName}}">{{this.userName}}</a>
+                {{#if this.titled}}
+                    <span style = "color:red" id = "fbtitled" title = "titled?">{{this.tabr}}</span>           
+                {{/if}}
+                <a class = "f-username" style = "color:{{this.nameCOl}}" href = "/user/{{this.userName}}">{{this.userName}}</a>
                 <b class = "state-b f-state">{{this.state}}</b>
                  {{#if this.isAdmin}}
                     <img class = "admin-logo" width = "20" src = "https://cdn.glitch.com/96dd1b57-087c-49b9-8d7a-02863bc2f271%2Fadmin%20logo.png?v=1560458428292">
@@ -58,7 +63,6 @@
                 <table cellspacing = "0px">
                   <thead>
                       <tr>
-                          <th>id</th>
                           <th>chapter</th>
                           <th>score</th>
                           <th>date</th>
@@ -68,7 +72,6 @@
                   <tbody>
                     {{#each scoresdata}}
                       <tr class = "score">
-                          <td class = "s-id">{{this.id}}</td>
                           <td class = "s-ch">{{this.ch}}</td>
                           <td><b class = "score-b">{{this.score}}</b></td>
                           <td><h4 class = "date">{{this.createdAt}}</h4></td>
@@ -96,7 +99,6 @@
                         <th colspan="5">top typequizzing scores</th>
                     </tr>
                       <tr>
-                          <th>id</th>
                           <th>chapter</th>
                           <th>score</th>
                           <th>date</th>
@@ -105,15 +107,14 @@
                   </thead>
                   <tbody>
                     {{#each ts}}
-                    {{#each this}}
-                      <tr>
-                        <td>{{this.id}}</td>
-                        <td>{{this.ch}}</td>
-                        <td>{{this.score}}</td>
-                        <td>{{this.createdAt}}</td>
-                        <td>{{this.type}}</td>
-                    </tr>
-                    {{/each}}
+                      {{#each this}}
+                        <tr>
+                          <td>{{this.ch}}</td>
+                          <td>{{this.score}}</td>
+                          <td>{{this.createdAt}}</td>
+                          <td>{{this.type}}</td>
+                        </tr>
+                      {{/each}}
                     {{/each}}
                   </tbody>
               </table>
@@ -131,5 +132,4 @@
 </main>
 		<footer class="kcss-main-footer"><span class="kcss-copyright"><a href="https://repl.it/@Koalaknightmi" target="_blank">Copyright &copy; 2018 Koalastrikermi/koalaknightmi</a></span></footer>
 	</body>
-  {{> login }}
 </html>

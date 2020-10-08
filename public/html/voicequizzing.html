@@ -27,44 +27,44 @@
     if (location.protocol !== "https:") {
       location.protocol = "https:"
     }
-  </script>
-  <!-- import the webpage's client-side javascript file-->
-  <script src="/js/voicequiz.js" defer></script>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-131092423-2"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
+  </script><!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-131092423-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-    gtag('js', new Date());
-
-    gtag('config', 'UA-131092423-2');
-  </script>
+  gtag('config', 'UA-131092423-2');
+</script>
+    <script src="/js/plain/raw/addlogin.js" charset="utf-8" defer></script>
+    <script src="/js/plain/raw/login.js" charset="utf-8" defer></script>
+    <script src="/js/plain/raw/nav.js" charset="utf-8" defer></script>
+    <script src="/js/plain/raw/offline.js" charset="utf-8" defer></script>
+    <script src="/js/plain/raw/voicequiz.js" charset="utf-8" defer></script>
 </head>
 
 <body>
-<header id = "nav">
-      <script src="/js/nav.js" defer></script>
-      <div id = "normal-nav">
-        <!--<a href="/html/typequizzing.html">type quizzing</a>
-        <a href="/html/scripture-portion.html">scripture portion</a>
-        <a href="/html/leaderboard.html">leaderboard</a>
-        <a href="/html/voicequizzing.html">voice quizzing</a>-->
+    <header id="nav">
+      <div id="normal-nav">
+        <button style="width:50px;height:20px;" id="navbtn">
+          <i class="material-icons md-24" style="color:black;font-size:30px;">menu</i>
+        </button>
       </div>
-      <div id = "moble-nav">
-        <button style = "width:100%;heigth:100%;" id = "navbtn"><i class="material-icons md-24" style = "color:black;font-size:30px;">menu</i></button>
-        <div id = "sdown-nav">
-          <!--<a class = "d-nav-a" href="/html/typequizzing.html">type quizzing</a>
-          <a class = "d-nav-a" href="/html/scripture-portion.html">scripture portion</a>
-          <a class = "d-nav-a" href="/html/leaderboard.html">leaderboard</a>
-          <a class = "d-nav-a" href="/html/voicequizzing.html">voice quizzing</a>-->
-        </div>
+      <div id="moble-nav">
+        <button style="width:100%;" id="navbtn">
+          <i class="material-icons md-24" style="color:black;font-size:30px;"
+            >menu</i
+          >
+        </button>
       </div>
     </header>
-
+    <side-nav id="mySidenav">
+      <div id = "subnav" style = "display:none">
+        
+      </div>
+    </side-nav>
   <main class = "page" id="quizzing">
-    <script src="/js/offline.js" defer></script>
+    <!--<script src="/js/offline.js" defer></script>-->
     <div id="status"></div>
     <div id="settings">
       <div id="ch-set">
@@ -124,9 +124,4 @@
   <footer class="kcss-main-footer"><span class="kcss-copyright"><a href="https://repl.it/@Koalaknightmi" target="_blank">Copyright &copy; 2018 Koalastrikermi/koalaknightmi</a></span></footer>
 
 </body>
-  
-<script src="/lib/annyang.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
-<script src="/js/addlogin.js"></script>
-<script src="/js/login.js"></script>
 </html>
